@@ -34,7 +34,7 @@
     "**/*.jsx",
     ".next/types/**/*.js",
     ".next/types/**/*.ts"
-  ],
+, "app/api/forts/route.ts", "app/admin/page.tsx"  ],
   "exclude": [
     "node_modules"
   ]

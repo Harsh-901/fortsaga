@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +24,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthPage() {
+  const supabase = useSupabase();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,6 +38,7 @@ export default function AuthPage() {
   });
 
   // LOGIN with Supabase Auth
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);

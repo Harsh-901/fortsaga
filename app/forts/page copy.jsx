@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,31 +15,113 @@ export default function FortsExplorer() {
   const [searchTerm, setSearchTerm] = useState("")
   const [locationFilter, setLocationFilter] = useState("all")
   const [eraFilter, setEraFilter] = useState("all")
-  const [forts, setForts] = useState([])
 
-  useEffect(() => {
-    async function fetchForts() {
-      try {
-        const res = await fetch("/api/forts")
-        if (!res.ok) {
-          throw new Error("Failed to fetch forts")
-        }
-        const data = await res.json()
-        setForts(data)
-      } catch (error) {
-        console.error("Error fetching forts:", error)
-      }
-    }
-    fetchForts()
-  }, [])
+  const forts = [
+    {
+      id: "raigad",
+      name: "Raigad Fort",
+      location: "Raigad, Maharashtra",
+      era: "17th Century",
+      significance: "Capital of Maratha Empire",
+      description:
+        "The majestic capital of the Maratha Empire and coronation place of Chhatrapati Shivaji Maharaj. This hill fort stands as a testament to Maratha architectural brilliance.",
+      image: "/historic-fort-on-mountain.png",
+      difficulty: "Moderate",
+      visitTime: "4-5 hours",
+      bestSeason: "October to March",
+      highlights: ["Coronation Throne", "Jagdishwar Temple", "Queen's Quarters"],
+      rating: 4.8,
+      visitors: "50K+ annually",
+    },
+    {
+      id: "shivneri",
+      name: "Shivneri Fort",
+      location: "Pune, Maharashtra",
+      era: "16th Century",
+      significance: "Birthplace of Shivaji Maharaj",
+      description:
+        "The sacred birthplace of Chhatrapati Shivaji Maharaj, featuring ancient architecture and historical significance that shaped the Maratha Empire.",
+      image: "/ancient-fort-with-stone-walls.png",
+      difficulty: "Easy",
+      visitTime: "3-4 hours",
+      bestSeason: "November to February",
+      highlights: ["Birth Chamber", "Shivai Devi Temple", "Water Cisterns"],
+      rating: 4.7,
+      visitors: "40K+ annually",
+    },
+    {
+      id: "pratapgad",
+      name: "Pratapgad Fort",
+      location: "Satara, Maharashtra",
+      era: "17th Century",
+      significance: "Site of Afzal Khan Battle",
+      description:
+        "Historic fort where the famous encounter between Shivaji Maharaj and Afzal Khan took place, marking a turning point in Maratha history.",
+      image: "/hilltop-fort-with-battlements.png",
+      difficulty: "Moderate",
+      visitTime: "3-4 hours",
+      bestSeason: "October to March",
+      highlights: ["Afzal Khan's Tomb", "Bhavani Temple", "Victory Memorial"],
+      rating: 4.6,
+      visitors: "35K+ annually",
+    },
+    {
+      id: "rajgad",
+      name: "Rajgad Fort",
+      location: "Pune, Maharashtra",
+      era: "17th Century",
+      significance: "First Capital of Marathas",
+      description:
+        "Known as the 'King of Forts', Rajgad served as the first capital of the Maratha Empire for over 25 years under Shivaji Maharaj's rule.",
+      image: "/ancient-mountain-fort-with-multiple-levels.png",
+      difficulty: "Challenging",
+      visitTime: "6-7 hours",
+      bestSeason: "October to March",
+      highlights: ["Balekilla", "Suvela Machi", "Padmavati Temple"],
+      rating: 4.9,
+      visitors: "30K+ annually",
+    },
+    {
+      id: "sinhagad",
+      name: "Sinhagad Fort",
+      location: "Pune, Maharashtra",
+      era: "17th Century",
+      significance: "Tanaji's Heroic Battle",
+      description:
+        "Famous for the heroic battle led by Tanaji Malusare, this fort represents the valor and sacrifice of Maratha warriors.",
+      image: "/hilltop-fort-with-stone-walls-and-gates.png",
+      difficulty: "Easy",
+      visitTime: "2-3 hours",
+      bestSeason: "October to March",
+      highlights: ["Tanaji Memorial", "Kalyan Darwaja", "Tomb of Tanaji"],
+      rating: 4.5,
+      visitors: "80K+ annually",
+    },
+    {
+      id: "torna",
+      name: "Torna Fort",
+      location: "Pune, Maharashtra",
+      era: "16th Century",
+      significance: "First Fort Captured by Shivaji",
+      description:
+        "The first fort captured by young Shivaji Maharaj at age 16, marking the beginning of the great Maratha Empire.",
+      image: "/ancient-fort-on-steep-mountain-peak.png",
+      difficulty: "Challenging",
+      visitTime: "5-6 hours",
+      bestSeason: "November to February",
+      highlights: ["Zunjar Machi", "Budhla Machi", "Ancient Caves"],
+      rating: 4.4,
+      visitors: "25K+ annually",
+    },
+  ]
 
   const filteredForts = forts.filter((fort) => {
     const matchesSearch =
       fort.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       fort.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (fort.historicalSignificance || "").toLowerCase().includes(searchTerm.toLowerCase())
+      fort.significance.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesLocation = locationFilter === "all" || fort.location.includes(locationFilter)
-    const matchesEra = eraFilter === "all" || (fort.historicalPeriod || "").includes(eraFilter)
+    const matchesEra = eraFilter === "all" || fort.era.includes(eraFilter)
     return matchesSearch && matchesLocation && matchesEra
   })
 
@@ -97,11 +179,8 @@ export default function FortsExplorer() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Eras</SelectItem>
-                <SelectItem value="maratha">Maratha Empire</SelectItem>
-                <SelectItem value="mughal">Mughal Period</SelectItem>
-                <SelectItem value="british">British Period</SelectItem>
-                <SelectItem value="ancient">Ancient Period</SelectItem>
-                <SelectItem value="medieval">Medieval Period</SelectItem>
+                <SelectItem value="16th">16th Century</SelectItem>
+                <SelectItem value="17th">17th Century</SelectItem>
               </SelectContent>
             </Select>
 
@@ -140,17 +219,17 @@ export default function FortsExplorer() {
               <Card key={fort.id} className="border-border hover:shadow-lg transition-shadow group">
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   <img
-                    src={fort.image_url || "/placeholder.svg"}
+                    src={fort.image || "/placeholder.svg"}
                     alt={fort.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-4 left-4">
-                    <Badge className={getDifficultyBadge(fort.trekDifficulty)}>{fort.trekDifficulty}</Badge>
+                    <Badge className={getDifficultyBadge(fort.difficulty)}>{fort.difficulty}</Badge>
                   </div>
                   <div className="absolute top-4 right-4">
                     <div className="flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                       <Star className="w-3 h-3 fill-current" />
-                      {fort.rating || 4.5}
+                      {fort.rating}
                     </div>
                   </div>
                 </div>
@@ -164,7 +243,7 @@ export default function FortsExplorer() {
                         {fort.location}
                       </CardDescription>
                       <Badge variant="outline" className="text-xs">
-                        {fort.historicalSignificance}
+                        {fort.significance}
                       </Badge>
                     </div>
                   </div>
@@ -176,11 +255,11 @@ export default function FortsExplorer() {
                   <div className="grid grid-cols-2 gap-4 mb-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {fort.visitingHours}
+                      {fort.visitTime}
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      {fort.visitors || "N/A"}
+                      {fort.visitors}
                     </div>
                   </div>
 

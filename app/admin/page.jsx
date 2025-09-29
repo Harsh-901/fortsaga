@@ -1,5 +1,5 @@
-  "use client"
-
+"use client"
+import Link from "next/link";
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -231,6 +231,36 @@ export default function AdminDashboard() {
     trekDifficulty: "",
     images: [],
   })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const fortData = {
+      name,
+      location,
+      description,
+      image_url,
+      created_by: userId, // pass the logged-in user's id
+    };
+
+    try {
+      const res = await fetch("/api/forts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fortData),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) throw new Error(result.error || "Failed to add fort");
+
+      alert("Fort added successfully!");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+
 
   const [selectedReport, setSelectedReport] = useState(null)
   const [reportViewOpen, setReportViewOpen] = useState(false)
@@ -1084,358 +1114,6 @@ export default function AdminDashboard() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={showAddFortDialog} onOpenChange={setShowAddFortDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-primary">Add New Fort</DialogTitle>
-              <DialogDescription>
-                Add a new fort to the heritage conservation database with detailed information.
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmitFort} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">Basic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Fort Name *</Label>
-                    <Input
-                      id="name"
-                      value={fortForm.name}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Raigad Fort"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="location">Location *</Label>
-                    <Input
-                      id="location"
-                      value={fortForm.location}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, location: e.target.value }))}
-                      placeholder="e.g., Raigad, Maharashtra"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="district">District</Label>
-                    <Input
-                      id="district"
-                      value={fortForm.district}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, district: e.target.value }))}
-                      placeholder="e.g., Raigad"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="coordinates">GPS Coordinates</Label>
-                    <Input
-                      id="coordinates"
-                      value={fortForm.coordinates}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, coordinates: e.target.value }))}
-                      placeholder="e.g., 18.2365° N, 73.4412° E"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Historical Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
-                  Historical Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="builtBy">Built By</Label>
-                    <Input
-                      id="builtBy"
-                      value={fortForm.builtBy}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, builtBy: e.target.value }))}
-                      placeholder="e.g., Chhatrapati Shivaji Maharaj"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="builtYear">Built Year</Label>
-                    <Input
-                      id="builtYear"
-                      value={fortForm.builtYear}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, builtYear: e.target.value }))}
-                      placeholder="e.g., 1656"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="historicalPeriod">Historical Period</Label>
-                    <Select
-                      value={fortForm.historicalPeriod}
-                      onValueChange={(value) => setFortForm((prev) => ({ ...prev, historicalPeriod: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select period" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="maratha">Maratha Empire</SelectItem>
-                        <SelectItem value="mughal">Mughal Period</SelectItem>
-                        <SelectItem value="british">British Period</SelectItem>
-                        <SelectItem value="ancient">Ancient Period</SelectItem>
-                        <SelectItem value="medieval">Medieval Period</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="fortType">Fort Type</Label>
-                    <Select
-                      value={fortForm.fortType}
-                      onValueChange={(value) => setFortForm((prev) => ({ ...prev, fortType: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hill">Hill Fort</SelectItem>
-                        <SelectItem value="sea">Sea Fort</SelectItem>
-                        <SelectItem value="land">Land Fort</SelectItem>
-                        <SelectItem value="mountain">Mountain Fort</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Physical Details */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">Physical Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="elevation">Elevation (meters)</Label>
-                    <Input
-                      id="elevation"
-                      value={fortForm.elevation}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, elevation: e.target.value }))}
-                      placeholder="e.g., 820"
-                      type="number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="area">Area (sq km)</Label>
-                    <Input
-                      id="area"
-                      value={fortForm.area}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, area: e.target.value }))}
-                      placeholder="e.g., 2.5"
-                      type="number"
-                      step="0.1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="trekDifficulty">Trek Difficulty</Label>
-                    <Select
-                      value={fortForm.trekDifficulty}
-                      onValueChange={(value) => setFortForm((prev) => ({ ...prev, trekDifficulty: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="moderate">Moderate</SelectItem>
-                        <SelectItem value="difficult">Difficult</SelectItem>
-                        <SelectItem value="extreme">Extreme</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Detailed Descriptions */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
-                  Detailed Information
-                </h3>
-                <div>
-                  <Label htmlFor="description">General Description</Label>
-                  <Textarea
-                    id="description"
-                    value={fortForm.description}
-                    onChange={(e) => setFortForm((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Provide a general description of the fort..."
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="historicalSignificance">Historical Significance</Label>
-                  <Textarea
-                    id="historicalSignificance"
-                    value={fortForm.historicalSignificance}
-                    onChange={(e) => setFortForm((prev) => ({ ...prev, historicalSignificance: e.target.value }))}
-                    placeholder="Describe the historical importance and events..."
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="architecture">Architecture Details</Label>
-                  <Textarea
-                    id="architecture"
-                    value={fortForm.architecture}
-                    onChange={(e) => setFortForm((prev) => ({ ...prev, architecture: e.target.value }))}
-                    placeholder="Describe architectural features, construction style..."
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="keyFeatures">Key Features</Label>
-                  <Textarea
-                    id="keyFeatures"
-                    value={fortForm.keyFeatures}
-                    onChange={(e) => setFortForm((prev) => ({ ...prev, keyFeatures: e.target.value }))}
-                    placeholder="List important structures, gates, temples, etc..."
-                    rows={2}
-                  />
-                </div>
-              </div>
-
-              {/* Visitor Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
-                  Visitor Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="visitingHours">Visiting Hours</Label>
-                    <Input
-                      id="visitingHours"
-                      value={fortForm.visitingHours}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, visitingHours: e.target.value }))}
-                      placeholder="e.g., 6:00 AM - 6:00 PM"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="entryFee">Entry Fee</Label>
-                    <Input
-                      id="entryFee"
-                      value={fortForm.entryFee}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, entryFee: e.target.value }))}
-                      placeholder="e.g., ₹25 per person"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bestTimeToVisit">Best Time to Visit</Label>
-                    <Input
-                      id="bestTimeToVisit"
-                      value={fortForm.bestTimeToVisit}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, bestTimeToVisit: e.target.value }))}
-                      placeholder="e.g., October to March"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="accessibility">Accessibility</Label>
-                    <Select
-                      value={fortForm.accessibility}
-                      onValueChange={(value) => setFortForm((prev) => ({ ...prev, accessibility: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select accessibility" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="excellent">Excellent</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="moderate">Moderate</SelectItem>
-                        <SelectItem value="difficult">Difficult</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="nearestRailway">Nearest Railway Station</Label>
-                    <Input
-                      id="nearestRailway"
-                      value={fortForm.nearestRailway}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, nearestRailway: e.target.value }))}
-                      placeholder="e.g., Pune Junction (65 km)"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="nearestAirport">Nearest Airport</Label>
-                    <Input
-                      id="nearestAirport"
-                      value={fortForm.nearestAirport}
-                      onChange={(e) => setFortForm((prev) => ({ ...prev, nearestAirport: e.target.value }))}
-                      placeholder="e.g., Pune Airport (85 km)"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="accommodation">Accommodation Options</Label>
-                  <Textarea
-                    id="accommodation"
-                    value={fortForm.accommodation}
-                    onChange={(e) => setFortForm((prev) => ({ ...prev, accommodation: e.target.value }))}
-                    placeholder="Describe nearby hotels, guesthouses, camping options..."
-                    rows={2}
-                  />
-                </div>
-              </div>
-
-              {/* Image Upload */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">Images</h3>
-                <div>
-                  <Label htmlFor="images">Upload Fort Images</Label>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="images"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById("images").click()}
-                      className="w-full h-20 border-2 border-dashed border-border hover:border-primary"
-                    >
-                      <Upload className="w-6 h-6 mr-2" />
-                      Click to upload images or drag and drop
-                    </Button>
-                  </div>
-
-                  {fortForm.images.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                      {fortForm.images.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={image.preview || "/placeholder.svg"}
-                            alt={`Fort image ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-border"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                            onClick={() => removeImage(index)}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowAddFortDialog(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
-                  Add Fort
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -1530,13 +1208,12 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      className="h-20 flex-col bg-primary hover:bg-primary/90 text-primary-foreground"
-                      onClick={handleAddFort}
-                    >
-                      <Plus className="w-6 h-6 mb-2" />
-                      Add Fort
-                    </Button>
+                    <Link href="/admin/add-fort" passHref>
+                      <Button className="h-20 flex-col bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Plus className="w-6 h-6 mb-2" />
+                        Add Fort
+                      </Button>
+                    </Link>
                     <Button variant="outline" className="h-20 flex-col bg-transparent" onClick={handleGenerateReport}>
                       <FileText className="w-6 h-6 mb-2" />
                       Generate Report
