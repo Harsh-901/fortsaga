@@ -73,8 +73,8 @@ export default function CitizenDashboard() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const myReports = [
-    { id: 1, title: "Illegal cutting", status: "Pending" },
-    { id: 2, title: "Unhealthy tree", status: "Resolved" },
+    { id: 1, title: "Illegal cutting", status: "Pending", fort: "Raigad Fort", issue: "Illegal cutting of trees near the main gate", category: "vandalism", urgency: "high", date: "2024-01-15" },
+    { id: 2, title: "Unhealthy tree", status: "Resolved", fort: "Shivneri Fort", issue: "Tree showing signs of disease and needs treatment", category: "maintenance", urgency: "medium", date: "2024-01-10" },
   ];
   const [registerForm, setRegisterForm] = useState({
     name: "",
@@ -105,6 +105,33 @@ export default function CitizenDashboard() {
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [reportFilter, setReportFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [visitedForts, setVisitedForts] = useState([]);
+  const [favoriteForts, setFavoriteForts] = useState([]);
+
+  const filteredReports = myReports.filter((report) => {
+    const matchesStatus = reportFilter === 'all' || report.status.toLowerCase() === reportFilter;
+    const matchesSearch = searchTerm === '' || report.title.toLowerCase().includes(searchTerm.toLowerCase()) || report.issue.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
+
+  const userBadges = [
+    { id: 'heritage-guardian', name: 'Heritage Guardian', description: 'Submitted 5 reports', icon: '🏛️', earned: true, earnedDate: '2024-01-15' },
+    { id: 'tree-saver', name: 'Tree Saver', description: 'Reported tree-related issues', icon: '🌳', earned: true, earnedDate: '2024-01-10' },
+    { id: 'community-helper', name: 'Community Helper', description: 'Helped resolve community issues', icon: '🤝', earned: false },
+  ];
+
+  const communityStats = {
+    totalMembers: 1250,
+    activeThisMonth: 340,
+    totalReports: 567,
+    resolvedReports: 423,
+    topContributors: [
+      { name: 'Rajesh Kumar', reports: 45, score: 1250 },
+      { name: 'Priya Sharma', reports: 38, score: 1100 },
+      { name: 'Amit Patel', reports: 32, score: 950 },
+    ]
+  };
 
   const [notifications, setNotifications] = useState([
     {
@@ -142,6 +169,35 @@ export default function CitizenDashboard() {
       badgeNotifications: true,
     },
   });
+
+  // Helper functions for badges
+  const getStatusBadge = (status) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'resolved':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'assigned':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getUrgencyBadge = (urgency) => {
+    switch (urgency.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
   // ---------------- EFFECTS ----------------
   useEffect(() => {
@@ -235,6 +291,41 @@ export default function CitizenDashboard() {
 
   const deleteNotification = (notificationId) => {
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+  };
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'report':
+        setActiveTab('report');
+        break;
+      case 'explore':
+        setActiveTab('explore');
+        break;
+      case 'reports':
+        setActiveTab('my-reports');
+        break;
+      case 'badges':
+        setBadgesDialogOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleViewReport = (id) => {
+    const report = myReports.find(r => r.id === id);
+    if (report) {
+      setSelectedReport(report);
+      setReportViewOpen(true);
+    }
+  };
+
+  const markFortAsVisited = (fortName) => {
+    setVisitedForts(prev => prev.includes(fortName) ? prev : [...prev, fortName]);
+  };
+
+  const toggleFavoriteFort = (fortName) => {
+    setFavoriteForts(prev => prev.includes(fortName) ? prev.filter(f => f !== fortName) : [...prev, fortName]);
   };
   return (
     <div className="min-h-screen bg-background">
