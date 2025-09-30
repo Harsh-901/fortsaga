@@ -71,6 +71,7 @@ export default function CitizenDashboard() {
   // ---------------- STATE ----------------
   const [activeTab, setActiveTab] = useState("login"); // can switch between "login" and "register"
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [registerForm, setRegisterForm] = useState({
     name: "",
     email: "",
@@ -223,8 +224,6 @@ export default function CitizenDashboard() {
 
   const deleteNotification = (notificationId) => {
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
   };
   return (
     <div className="min-h-screen bg-background">
