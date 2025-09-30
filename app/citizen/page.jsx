@@ -72,6 +72,10 @@ export default function CitizenDashboard() {
   const [activeTab, setActiveTab] = useState("login"); // can switch between "login" and "register"
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const myReports = [
+    { id: 1, title: "Illegal cutting", status: "Pending" },
+    { id: 2, title: "Unhealthy tree", status: "Resolved" },
+  ];
   const [registerForm, setRegisterForm] = useState({
     name: "",
     email: "",
@@ -84,7 +88,7 @@ export default function CitizenDashboard() {
     contributionScore: 0,
     badgesEarned: 0,
   });
-  
+
   const [selectedImages, setSelectedImages] = useState([]);
   const [reportForm, setReportForm] = useState({
     fort: "",
@@ -961,11 +965,10 @@ export default function CitizenDashboard() {
                         onClick={() => toggleFavoriteFort(fort.name)}
                       >
                         <Heart
-                          className={`w-4 h-4 ${
-                            favoriteForts.includes(fort.name)
+                          className={`w-4 h-4 ${favoriteForts.includes(fort.name)
                               ? "fill-red-500 text-red-500"
                               : "text-gray-600"
-                          }`}
+                            }`}
                         />
                       </Button>
                       <Button
@@ -1260,15 +1263,14 @@ export default function CitizenDashboard() {
                         <div key={index} className="flex items-start gap-3">
                           <div className="flex flex-col items-center">
                             <div
-                              className={`w-3 h-3 rounded-full ${
-                                entry.status === "resolved"
+                              className={`w-3 h-3 rounded-full ${entry.status === "resolved"
                                   ? "bg-green-500"
                                   : entry.status === "in-progress"
-                                  ? "bg-blue-500"
-                                  : entry.status === "assigned"
-                                  ? "bg-orange-500"
-                                  : "bg-gray-400"
-                              }`}
+                                    ? "bg-blue-500"
+                                    : entry.status === "assigned"
+                                      ? "bg-orange-500"
+                                      : "bg-gray-400"
+                                }`}
                             ></div>
                             {index < selectedReport.timeline.length - 1 && (
                               <div className="w-0.5 h-8 bg-border mt-1"></div>
@@ -1435,11 +1437,10 @@ export default function CitizenDashboard() {
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 rounded-lg border ${
-                      notification.read
+                    className={`p-4 rounded-lg border ${notification.read
                         ? "bg-card/30 border-border"
                         : "bg-blue-50 border-blue-200"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
