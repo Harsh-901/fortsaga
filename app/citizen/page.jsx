@@ -78,6 +78,13 @@ export default function CitizenDashboard() {
     password: "",
   });
 
+  const [userStats, setUserStats] = useState({
+    reportsSubmitted: 0,
+    reportsResolved: 0,
+    contributionScore: 0,
+    badgesEarned: 0,
+  });
+  
   const [selectedImages, setSelectedImages] = useState([]);
   const [reportForm, setReportForm] = useState({
     fort: "",
