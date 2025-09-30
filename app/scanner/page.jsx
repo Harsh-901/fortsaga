@@ -11,14 +11,15 @@ import QrScanner from "qr-scanner"
 
 export default function ScannerPage() {
   const videoRef = useRef(null)
-  const [result, setResult] = useState("")
-
   useEffect(() => {
     let scanner
     if (videoRef.current) {
       scanner = new QrScanner(
         videoRef.current,
-        (res) => setResult(res),
+        (res) => {
+          scanner.stop()
+          window.location.href = res.data
+        },
         { highlightScanRegion: true }
       )
       scanner.start()
@@ -45,11 +46,6 @@ export default function ScannerPage() {
           </p>
           <div className="flex flex-col items-center gap-4">
             <video ref={videoRef} style={{ width: "100%", maxWidth: 400, borderRadius: 12 }} />
-            {result && (
-              <div className="mt-4 p-4 bg-card rounded-lg border text-foreground">
-                <strong>Result:</strong> {result}
-              </div>
-            )}
           </div>
         </div>
       </section>
