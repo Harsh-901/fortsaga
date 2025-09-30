@@ -223,6 +223,8 @@ export default function CitizenDashboard() {
 
   const deleteNotification = (notificationId) => {
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   };
   return (
     <div className="min-h-screen bg-background">
