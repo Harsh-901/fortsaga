@@ -158,14 +158,14 @@ export default function FortDetails() {
 
   const relatedForts = [
     {
-      id: "shivneri",
+      id: "e39e0687-bc17-43de-bc7d-3b57a70e453e",
       name: "Shivneri Fort",
       location: "Pune, Maharashtra",
       image: "https://picsum.photos/200/150",
       significance: "Birthplace of Shivaji Maharaj",
     },
     {
-      id: "pratapgad",
+      id: "9e8e9c23-3a93-455b-9b5b-3baf5003f1bf",
       name: "Pratapgad Fort",
       location: "Satara, Maharashtra",
       image: "https://picsum.photos/200/150",

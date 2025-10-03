@@ -140,13 +140,13 @@ export default function FortsExplorer() {
               <Card key={fort.id} className="border-border hover:shadow-lg transition-shadow group">
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   <img
-                    src={fort.image_url || "/placeholder.svg"}
+                    src="https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"
                     alt={fort.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-4 left-4">
+                  {/* <div className="absolute top-4 left-4">
                     <Badge className={getDifficultyBadge(fort.trekDifficulty)}>{fort.trekDifficulty}</Badge>
-                  </div>
+                  </div> */}
                   <div className="absolute top-4 right-4">
                     <div className="flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                       <Star className="w-3 h-3 fill-current" />
