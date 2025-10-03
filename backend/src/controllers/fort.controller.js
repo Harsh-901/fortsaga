@@ -8,6 +8,12 @@ async function getForts(req, res, next) {
       .eq("is_active", true);
 
     if (error) throw error;
+
+    // Add static image for the first fort as an example
+    if (data && data.length > 0 && !data[0].image_url) {
+      data[0].image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Raigad_Fort.jpg/800px-Raigad_Fort.jpg";
+    }
+
     res.json(data);
   } catch (err) {
     next(err);

@@ -161,14 +161,14 @@ export default function FortDetails() {
       id: "shivneri",
       name: "Shivneri Fort",
       location: "Pune, Maharashtra",
-      image: "/ancient-fort-with-stone-walls.png",
+      image: "https://picsum.photos/200/150",
       significance: "Birthplace of Shivaji Maharaj",
     },
     {
       id: "pratapgad",
       name: "Pratapgad Fort",
       location: "Satara, Maharashtra",
-      image: "/hilltop-fort-with-battlements.png",
+      image: "https://picsum.photos/200/150",
       significance: "Site of Afzal Khan Battle",
     },
   ]
@@ -218,7 +218,7 @@ export default function FortDetails() {
       {/* Hero Section */}
       <section className="relative">
         <div className="aspect-video md:aspect-[21/9] relative overflow-hidden">
-          <img src={fortData.images[0] || "/placeholder.svg"} alt={fortData.name} className="w-full h-full object-cover" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg" alt={fortData.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="container mx-auto">
@@ -326,7 +326,7 @@ export default function FortDetails() {
                       <Link key={relatedFort.id} href={`/forts/${relatedFort.id}`}>
                         <div className="flex gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors">
                           <img
-                            src={relatedFort.image || "/placeholder.svg"}
+                            src={fortData.images && fortData.images.length > 0 ? fortData.images[0] : "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
                             alt={relatedFort.name}
                             className="w-16 h-16 object-cover rounded-lg"
                           />
@@ -362,7 +362,7 @@ export default function FortDetails() {
                   }}
                 >
                   <img
-                    src={image || "/placeholder.svg"}
+                    src={fortData.images && fortData.images.length > 0 ? fortData.images[0] : "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
                     alt={`${fortData.name} - Image ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -378,7 +378,7 @@ export default function FortDetails() {
               <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
                 <div className="relative max-w-4xl max-h-full">
                   <img
-                    src={fortData.images[selectedImage] || "/placeholder.svg"}
+                    src={fortData.images && fortData.images.length > 0 ? fortData.images[0] : "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
                     alt={`${fortData.name} - Image ${selectedImage + 1}`}
                     className="max-w-full max-h-full object-contain"
                   />
@@ -508,17 +508,17 @@ export default function FortDetails() {
                 <CardHeader>
                   <CardTitle className="text-foreground">Key Features</CardTitle>
                 </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {fortData.architecture?.features?.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                <CardContent>
+                  <div className="space-y-3">
+                    {fortData.architecture?.features?.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -562,13 +562,13 @@ export default function FortDetails() {
                         <span className="text-muted-foreground text-sm">{facility}</span>
                       </div>
                     )) || (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full" />
-                          <span className="text-muted-foreground text-sm">Parking</span>
-                        </div>
-                      </>
-                    )}
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                            <span className="text-muted-foreground text-sm">Parking</span>
+                          </div>
+                        </>
+                      )}
                   </div>
                 </CardContent>
               </Card>
