@@ -38,7 +38,17 @@ export default function HomePage() {
                   Report an Issue
                 </Button>
               </Link>
+              <Link href="/quiz">
+                <Button
+                  size="lg"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Take Quiz
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
             </div>
+            
             <Link href="/scanner" className="w-full flex justify-center">
               <Button size="lg" variant="secondary" className="mt-2 w-full sm:w-auto">
                 Open Scanner

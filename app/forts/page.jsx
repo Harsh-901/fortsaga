@@ -39,7 +39,7 @@ export default function FortsExplorer() {
       fort.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (fort.historicalSignificance || "").toLowerCase().includes(searchTerm.toLowerCase())
     const matchesLocation = locationFilter === "all" || fort.location.includes(locationFilter)
-    const matchesEra = eraFilter === "all" || (fort.historicalPeriod || "").includes(eraFilter)
+    const matchesEra = eraFilter === "all" || (fort["historical_period"] || "").includes(eraFilter)
     return matchesSearch && matchesLocation && matchesEra
   })
 
