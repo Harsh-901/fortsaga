@@ -311,65 +311,11 @@ export default function FortDetails() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Historical Timeline</CardTitle>
-                    <CardDescription>Key events in the fort's history</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {fortData.timeline.map((event, index) => (
-                        <div key={index} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className="w-3 h-3 bg-primary rounded-full" />
-                            {index < fortData.timeline.length - 1 && <div className="w-px h-16 bg-border mt-2" />}
-                          </div>
-                          <div className="flex-1 pb-6">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="outline">{event.year}</Badge>
-                            </div>
-                            <h4 className="font-semibold text-foreground mb-2">{event.event}</h4>
-                            <p className="text-muted-foreground text-sm">{event.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+
               </div>
 
               <div className="space-y-6">
-                <Card className="border-border">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Visit Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Clock className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-foreground">Visit Duration</span>
-                      </div>
-                      <p className="text-muted-foreground text-sm">{fortData.visittime || fortData.visitTime}</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-foreground">Best Season</span>
-                      </div>
-                      <p className="text-muted-foreground text-sm">{fortData.bestseason || fortData.bestSeason || fortData.bestTimeToVisit}</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Mountain className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-foreground">Difficulty</span>
-                      </div>
-                      <Badge className={getDifficultyBadge(fortData["trek difficulty"])}>{fortData["trek difficulty"]}</Badge>
-                    </div>
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Get Directions
-                    </Button>
-                  </CardContent>
-                </Card>
+
 
                 <Card className="border-border">
                   <CardHeader>

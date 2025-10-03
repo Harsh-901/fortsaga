@@ -173,16 +173,7 @@ export default function FortsExplorer() {
                 <CardContent>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{fort.description}</p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {fort.visitingHours}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {fort.visitors || "N/A"}
-                    </div>
-                  </div>
+                  {/* Removed visit information box in grid view */}
 
                   <Link href={`/forts/${fort.id}`}>
                     <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -229,31 +220,8 @@ export default function FortsExplorer() {
 
                     <p className="text-muted-foreground mb-4">{fort.description}</p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Visit Time:</span>
-                        <div className="font-medium text-foreground">{fort.visitTime}</div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Best Season:</span>
-                        <div className="font-medium text-foreground">{fort.bestSeason}</div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Annual Visitors:</span>
-                        <div className="font-medium text-foreground">{fort.visitors}</div>
-                      </div>
-                    </div>
-
-                    <div className="mb-6">
-                      <h4 className="font-medium text-foreground mb-2">Key Highlights:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {fort.highlights.map((highlight, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {highlight}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Removed visit information box in list view */}
+                    {/* Removed historical timeline (Key Highlights) section */}
 
                     <Link href={`/forts/${fort.id}`}>
                       <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
