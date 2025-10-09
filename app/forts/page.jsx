@@ -91,7 +91,7 @@ export default function FortsExplorer() {
               </SelectContent>
             </Select>
 
-            <Select value={eraFilter} onValueChange={setEraFilter}>
+            {/* <Select value={eraFilter} onValueChange={setEraFilter}>
               <SelectTrigger className="w-40 bg-input border-border">
                 <SelectValue placeholder="Era" />
               </SelectTrigger>
@@ -103,7 +103,7 @@ export default function FortsExplorer() {
                 <SelectItem value="ancient">Ancient Period</SelectItem>
                 <SelectItem value="medieval">Medieval Period</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
 
             <div className="flex border border-border rounded-lg">
               <Button
@@ -140,7 +140,7 @@ export default function FortsExplorer() {
               <Card key={fort.id} className="border-border hover:shadow-lg transition-shadow group">
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"
+                    src={fort.MainImg || "/placeholder.svg"}
                     alt={fort.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -191,10 +191,10 @@ export default function FortsExplorer() {
                 <div className="flex flex-col md:flex-row">
                   <div className="md:w-80 aspect-video md:aspect-square relative overflow-hidden">
                     <img
-                      src={fort.image || "/placeholder.svg"}
-                      alt={fort.name}
-                      className="w-full h-full object-cover"
-                    />
+                    src={fort.MainImg || "/placeholder.svg"}
+                    alt={fort.name}
+                    className="w-full h-full object-cover"
+                  />
                   </div>
 
                   <div className="flex-1 p-6">

@@ -1243,10 +1243,14 @@ export default function AdminDashboard() {
                 <h2 className="text-2xl font-bold text-foreground">Fort Management</h2>
                 <p className="text-muted-foreground">Manage fort profiles and information</p>
               </div>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleAddFort}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Fort
-              </Button>
+              <div>
+                <Link href="/admin/add-fort" passHref>
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleAddFort}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Fort
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="flex items-center gap-4">
