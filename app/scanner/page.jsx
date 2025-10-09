@@ -6,7 +6,6 @@ import { Footer } from "@/components/shared/footer"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
 
-// You need to install 'qr-scanner' library: npm install qr-scanner
 import QrScanner from "qr-scanner"
 
 export default function ScannerPage() {
