@@ -136,8 +136,9 @@ export default function FortDetails() {
   // Merge with defaults, but handle null/undefined arrays properly
   const fortData = { ...defaultFort, ...fort }
 
-  // Ensure images is always an array
-  if (!fortData.images || !Array.isArray(fortData.images)) {
+  // Ensure images is always an array from Img1-Img4
+  fortData.images = [fortData.Img1, fortData.Img2, fortData.Img3, fortData.Img4].filter(img => img && img.trim())
+  if (fortData.images.length === 0) {
     fortData.images = ["/placeholder.svg"]
   }
 
@@ -218,7 +219,7 @@ export default function FortDetails() {
       {/* Hero Section */}
       <section className="relative">
         <div className="aspect-video md:aspect-[21/9] relative overflow-hidden">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg" alt={fortData.name} className="w-full h-full object-cover" />
+            <img src={fortData.MainImg || "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"} alt={fortData.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="container mx-auto">
@@ -362,7 +363,7 @@ export default function FortDetails() {
                   }}
                 >
                   <img
-                    src={fortData.images && fortData.images.length > 0 ? fortData.images[0] : "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
+                    src={image || "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
                     alt={`${fortData.name} - Image ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -378,7 +379,7 @@ export default function FortDetails() {
               <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
                 <div className="relative max-w-4xl max-h-full">
                   <img
-                    src={fortData.images && fortData.images.length > 0 ? fortData.images[0] : "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
+                    src={fortData.images[selectedImage] || "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"}
                     alt={`${fortData.name} - Image ${selectedImage + 1}`}
                     className="max-w-full max-h-full object-contain"
                   />
