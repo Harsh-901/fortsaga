@@ -219,7 +219,7 @@ export default function FortDetails() {
       {/* Hero Section */}
       <section className="relative">
         <div className="aspect-video md:aspect-[21/9] relative overflow-hidden">
-            <img src={fortData.MainImg || "https://upload.wikimedia.org/wikipedia/commons/4/49/Suvela_machi%2CRajgad_fort%2C_Maharashtra%2CIndia_July2015.jpg"} alt={fortData.name} className="w-full h-full object-cover" />
+            <img src={fortData.MainImg} alt={fortData.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="container mx-auto">
