@@ -1,2 +1,2 @@
-- [x] Update grid view image src to use fort.MainImg dynamically
-- [x] Update list view image src to use fort.MainImg dynamically
+- [x] Import useRouter from next/navigation in app/admin/page.jsx
+- [x] Modify handleGenerateReport to navigate to '/reports'

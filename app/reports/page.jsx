@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Header } from "@/components/shared/header";
 import { PageHeader } from "@/components/shared/page-header";
 import { AlertTriangle, Upload, X } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ReportsPage() {
   const [selectedFort, setSelectedFort] = useState("");
@@ -73,22 +74,21 @@ export default function ReportsPage() {
       // Convert images to previews for now (store as JSONB in Supabase)
       const imagePreviews = images.map((img) => img.preview);
 
-      const res = await fetch("http://localhost:4000/api/reports", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fort: selectedFort,
-          category: issueCategory,
-          urgency,
-          description,
-          location,
-          images: imagePreviews,
-        }),
-      });
+      const { data, error } = await supabase
+        .from('reports')
+        .insert([
+          {
+            reporter_name: 'Anonymous',
+            fort_name: selectedFort,
+            issue_category: issueCategory,
+            urgency_level: urgency,
+            description,
+            location,
+            images: imagePreviews,
+          }
+        ]);
 
-      if (!res.ok) throw new Error("Failed to submit report");
+      if (error) throw error;
 
       alert("Report submitted successfully!");
 

@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link";
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -49,6 +50,7 @@ import {
 } from "lucide-react"
 
 export default function AdminDashboard() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [urgencyFilter, setUrgencyFilter] = useState("all")
@@ -273,38 +275,23 @@ export default function AdminDashboard() {
   const [reportFilter, setReportFilter] = useState("all")
   const [reportSearch, setReportSearch] = useState("")
   const [reportHistory, setReportHistory] = useState({})
-  const [recentReports, setRecentReports] = useState([
-    {
-      id: "RPT-001",
-      fort: "Raigad Fort",
-      issue: "Wall damage near entrance",
-      reporter: "Amit Sharma",
-      status: "pending",
-      urgency: "high",
-      date: "2024-01-15",
-      location: "Main Gate Area",
-    },
-    {
-      id: "RPT-002",
-      fort: "Shivneri Fort",
-      issue: "Broken stairs to watchtower",
-      reporter: "Priya Patel",
-      status: "in-progress",
-      urgency: "medium",
-      date: "2024-01-14",
-      location: "Watchtower Section",
-    },
-    {
-      id: "RPT-003",
-      fort: "Pratapgad Fort",
-      issue: "Overgrown vegetation blocking path",
-      reporter: "Rajesh Kumar",
-      status: "resolved",
-      urgency: "low",
-      date: "2024-01-13",
-      location: "Main Trail",
-    },
-  ])
+  const [recentReports, setRecentReports] = useState([])
+
+  useEffect(() => {
+    async function fetchReports() {
+      try {
+        const res = await fetch("/api/reports");
+        if (!res.ok) {
+          throw new Error("Failed to fetch reports");
+        }
+        const data = await res.json();
+        setRecentReports(data);
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      }
+    }
+    fetchReports();
+  }, []);
 
   // Mock data
   const stats = {
@@ -619,7 +606,7 @@ export default function AdminDashboard() {
   }
 
   const handleGenerateReport = () => {
-    alert("Generate Report functionality - This would create a comprehensive report")
+    router.push('/reports')
   }
 
   const handleUploadMedia = () => {
@@ -1362,7 +1349,7 @@ export default function AdminDashboard() {
                     </Button>
                   </div>
                 )}
-                <Button>
+                <Button onClick={handleGenerateReport}>
                   <FileText className="w-4 h-4 mr-2" />
                   Generate Report
                 </Button>
@@ -1390,8 +1377,8 @@ export default function AdminDashboard() {
                     <TableHead>Report ID</TableHead>
                     <TableHead>Fort</TableHead>
                     <TableHead>Issue</TableHead>
-                    <TableHead>Reporter</TableHead>
-                    <TableHead>Status</TableHead>
+                    {/* <TableHead>Reporter</TableHead> */}
+                    <TableHead>Location</TableHead>
                     <TableHead>Urgency</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
@@ -1410,15 +1397,13 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="font-medium text-foreground">{report.id}</TableCell>
                       <TableCell className="text-muted-foreground">{report.fort}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-xs truncate">{report.issue}</TableCell>
-                      <TableCell className="text-muted-foreground">{report.reporter}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusBadge(report.status)}>{report.status}</Badge>
+                      <TableCell className="text-muted-foreground max-w-xs truncate">{report.description}</TableCell>
+                      <TableCell className="text-muted-foreground max-w-xs truncate">{report.location}
                       </TableCell>
                       <TableCell>
                         <Badge className={getUrgencyBadge(report.urgency)}>{report.urgency}</Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{report.date}</TableCell>
+                      <TableCell className="text-muted-foreground">{report.created_at}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="sm" onClick={() => handleViewReport(report.id)}>
