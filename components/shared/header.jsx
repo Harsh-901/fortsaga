@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Shield, Settings } from "lucide-react"
 import Link from "next/link"
+import { useUser } from "@/lib/supabase"
 
 export function Header({
   title = "FortSaga",
@@ -67,6 +68,8 @@ export function Header({
 }
 
 export function AdminHeader() {
+  const { signOut } = useUser();
+
   return (
     <Header
       title="FortSaga Admin"
@@ -74,11 +77,11 @@ export function AdminHeader() {
       showNavigation={false}
       actions={
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
+          {/* <Button variant="outline" size="sm">
             <Settings className="w-4 h-4 mr-2" />
             Settings
-          </Button>
-          <Button variant="outline" size="sm">
+          </Button> */}
+          <Button variant="outline" size="sm" onClick={signOut}>
             Sign Out
           </Button>
         </div>
@@ -87,18 +90,20 @@ export function AdminHeader() {
   )
 }
 
-export function CitizenHeader() {
+export function CitizenHeader({ userInfo }) {
+  const { signOut } = useUser();
+
   return (
     <Header
       title="FortSaga"
       subtitle="Citizen Portal"
       showNavigation={false}
-      userInfo={{
+      userInfo={userInfo || {
         name: "Amit Sharma",
         role: "Heritage Contributor",
       }}
       actions={
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={signOut}>
           Sign Out
         </Button>
       }

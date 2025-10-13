@@ -7,12 +7,16 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { LearningHeader } from "@/components/shared/header"
 import { BookOpen, Search, Clock, User, Calendar, Crown, Sword, Mountain, Scroll, Users, Star } from "lucide-react"
 
 export default function LearnPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [selectedArticle, setSelectedArticle] = useState(null)
+  const [selectedStory, setSelectedStory] = useState(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const articles = [
     {
@@ -20,6 +24,7 @@ export default function LearnPage() {
       title: "The Enduring Legacy of Chhatrapati Shivaji Maharaj",
       excerpt:
         "Explore how Shivaji Maharaj's vision and leadership shaped the Maratha Empire and influenced Indian history for centuries to come.",
+      content: "Chhatrapati Shivaji Maharaj, born in 1630 at Shivneri Fort, was a visionary leader whose impact on Indian history transcends centuries. His innovative administrative system, known as the Ashta Pradhan, laid the foundation for efficient governance. Shivaji's emphasis on Swarajya (self-rule) inspired generations and challenged the Mughal hegemony. He established a navy, promoted religious tolerance, and implemented welfare measures for his subjects. His legacy continues to inspire leaders worldwide, symbolizing courage, strategic brilliance, and unwavering commitment to justice and equality.",
       category: "Biography",
       author: "Dr. Rajesh Khurana",
       readTime: "8 min read",
@@ -32,6 +37,7 @@ export default function LearnPage() {
       title: "Architectural Marvels: Understanding Maratha Fort Design",
       excerpt:
         "Discover the unique architectural features and strategic design principles that made Maratha forts nearly impregnable.",
+      content: "Maratha fort architecture represents a pinnacle of defensive engineering. Built on hilltops with natural barriers, these forts featured multiple layers of walls, bastions, and machicolations. The strategic placement of gates, often with right-angle bends to prevent elephant charges, showcased tactical brilliance. Water management systems ensured self-sufficiency during sieges, while secret passages and escape routes added to their impregnability. The integration of natural terrain with man-made structures created fortresses that were both beautiful and formidable, standing as testaments to Maratha ingenuity.",
       category: "Architecture",
       author: "Prof. Meera Patil",
       readTime: "6 min read",
@@ -44,6 +50,7 @@ export default function LearnPage() {
       title: "Guerrilla Warfare: Shivaji's Revolutionary Military Strategy",
       excerpt:
         "Learn about the innovative military tactics that helped a small Maratha force challenge the mighty Mughal Empire.",
+      content: "Shivaji Maharaj revolutionized warfare with his guerrilla tactics, turning the odds against the numerically superior Mughal forces. His 'lightning raids' involved swift attacks on enemy supply lines, followed by quick retreats to fortified positions. The use of local terrain knowledge gave Maratha warriors a decisive advantage. Shivaji's intelligence network provided crucial information, enabling preemptive strikes. His emphasis on mobility, with cavalry units trained for rapid maneuvers, kept the enemy off-balance. These tactics not only secured victories but also minimized casualties, setting a precedent for asymmetric warfare that influenced military strategies worldwide.",
       category: "Military History",
       author: "Col. Vikram Singh",
       readTime: "10 min read",
@@ -56,6 +63,7 @@ export default function LearnPage() {
       title: "Powerful Women of the Maratha Empire",
       excerpt:
         "Celebrate the remarkable women who played crucial roles in the Maratha Empire, from Jijabai to Tarabai.",
+      content: "The Maratha Empire was shaped by extraordinary women who defied societal norms and contributed significantly to its success. Jijabai, Shivaji's mother, instilled values of courage and independence, guiding her son through early challenges. Ahilyabai Holkar, the enlightened ruler of Indore, rebuilt temples and promoted education. Tarabai, Shivaji's daughter-in-law, led armies and governed during turbulent times. These women managed estates, led diplomatic missions, and even commanded troops, proving that leadership transcends gender. Their stories highlight the progressive aspects of Maratha society and inspire women across generations.",
       category: "Social History",
       author: "Dr. Sunita Deshpande",
       readTime: "7 min read",
@@ -68,6 +76,7 @@ export default function LearnPage() {
       title: "Modern Conservation: Preserving Our Heritage",
       excerpt:
         "Understanding current efforts to preserve and restore Maharashtra's historic forts for future generations.",
+      content: "Preserving Maharashtra's historic forts requires a delicate balance between conservation and tourism. Modern techniques like laser scanning document structures before restoration, while traditional materials and methods ensure authenticity. Community involvement is crucial, with local residents participating in maintenance. Government initiatives, coupled with private partnerships, fund restoration projects. Challenges include weathering, encroachment, and balancing accessibility with protection. Successful conservation not only preserves history but also boosts local economies through heritage tourism, ensuring these magnificent structures continue to inspire future generations.",
       category: "Conservation",
       author: "Amit Sharma",
       readTime: "5 min read",
@@ -79,6 +88,7 @@ export default function LearnPage() {
       id: "maratha-navy-history",
       title: "Masters of the Sea: The Maratha Naval Legacy",
       excerpt: "Explore how Shivaji Maharaj built a formidable naval force that dominated the western coast of India.",
+      content: "Shivaji Maharaj's vision extended beyond land to establish maritime supremacy. Recognizing the importance of sea power, he built a formidable navy that controlled the western coastline. His shipbuilding program produced sturdy vessels capable of withstanding monsoons. Strategic ports like Vijayadurg became naval bases, while skilled commanders like Kanhoji Angre expanded Maratha influence. The navy protected trade routes, prevented invasions, and even launched offensive operations against European powers. This maritime legacy demonstrated Shivaji's comprehensive approach to statecraft and military strategy.",
       category: "Military History",
       author: "Capt. Pradeep Kulkarni",
       readTime: "9 min read",
@@ -93,6 +103,7 @@ export default function LearnPage() {
       id: "escape-from-agra",
       title: "The Great Escape from Agra",
       summary: "The thrilling tale of how Shivaji Maharaj escaped from Aurangzeb's captivity in Agra",
+      content: "In 1666, Shivaji Maharaj found himself imprisoned in Agra Fort under Mughal custody. Disguised as a sadhu, with his son Sambhaji and a few loyal followers, Shivaji orchestrated a daring escape. Using baskets of sweets to smuggle out his companions, he waited for the right moment. During a festival, chaos ensued, allowing Shivaji to slip away. Pursued relentlessly, he evaded capture through wit and courage. This legendary escape not only saved his life but also boosted Maratha morale and became a symbol of resistance against Mughal dominance.",
       duration: "15 min read",
       difficulty: "Beginner",
       image: "/historic-fort-on-mountain.png",
@@ -101,6 +112,7 @@ export default function LearnPage() {
       id: "battle-of-pratapgad",
       title: "The Battle of Pratapgad",
       summary: "The legendary encounter between Shivaji Maharaj and Afzal Khan that changed history",
+      content: "The Battle of Pratapgad in 1659 was a pivotal moment in Maratha history. Afzal Khan, a formidable Mughal general, was sent to eliminate the young Shivaji. In a treacherous meeting, Afzal Khan attempted to assassinate Shivaji with a hidden dagger. Shivaji, wearing armor, survived and counterattacked with his tiger claws, killing Afzal Khan. The Maratha forces then routed the Mughal army. This victory established Shivaji's reputation as a brilliant tactician and marked the rise of Maratha power in the Deccan.",
       duration: "12 min read",
       difficulty: "Intermediate",
       image: "/hilltop-fort-with-battlements.png",
@@ -109,6 +121,7 @@ export default function LearnPage() {
       id: "coronation-at-raigad",
       title: "The Coronation at Raigad",
       summary: "The grand ceremony that established the Maratha Empire and crowned Shivaji as Chhatrapati",
+      content: "On June 6, 1674, at Raigad Fort, Shivaji was crowned Chhatrapati in a grand ceremony. Pandit Gaga Bhatt performed the rituals, declaring Shivaji as the sovereign ruler. The ceremony included Vedic chants, royal insignia, and blessings from priests. Dignitaries from across India attended, acknowledging Shivaji's authority. This coronation formalized the Maratha Empire, with Shivaji adopting the title 'Chhatrapati' meaning 'Lord of the Umbrella'. It was a momentous event that united the Maratha clans under a single banner.",
       duration: "10 min read",
       difficulty: "Beginner",
       image: "/ancient-fort-with-stone-walls.png",
@@ -265,9 +278,45 @@ export default function LearnPage() {
                             {article.publishDate}
                           </div>
                         </div>
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                          Read Article
-                        </Button>
+                        <Dialog open={isDialogOpen && selectedArticle?.id === article.id} onOpenChange={(open) => {
+                          setIsDialogOpen(open)
+                          if (!open) {
+                            setSelectedArticle(null)
+                            setSelectedStory(null)
+                          }
+                        }}>
+                          <DialogTrigger asChild>
+                            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => {
+                              setSelectedArticle(article)
+                              setSelectedStory(null)
+                              setIsDialogOpen(true)
+                            }}>
+                              Read Article
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl font-bold">{selectedArticle?.title}</DialogTitle>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                                <div className="flex items-center gap-1">
+                                  <User className="w-3 h-3" />
+                                  {selectedArticle?.author}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {selectedArticle?.readTime}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {selectedArticle?.publishDate}
+                                </div>
+                              </div>
+                            </DialogHeader>
+                            <div className="mt-6">
+                              <p className="text-base leading-relaxed">{selectedArticle?.content}</p>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
                   ))}
@@ -303,9 +352,41 @@ export default function LearnPage() {
                           <span>{article.author}</span>
                           <span>{article.readTime}</span>
                         </div>
-                        <Button size="sm" variant="outline" className="w-full bg-transparent">
-                          Read More
-                        </Button>
+                        <Dialog open={isDialogOpen && selectedArticle?.id === article.id} onOpenChange={(open) => {
+                          setIsDialogOpen(open)
+                          if (!open) setSelectedArticle(null)
+                        }}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="w-full bg-transparent" onClick={() => {
+                              setSelectedArticle(article)
+                              setIsDialogOpen(true)
+                            }}>
+                              Read More
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl font-bold">{selectedArticle?.title}</DialogTitle>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                                <div className="flex items-center gap-1">
+                                  <User className="w-3 h-3" />
+                                  {selectedArticle?.author}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {selectedArticle?.readTime}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {selectedArticle?.publishDate}
+                                </div>
+                              </div>
+                            </DialogHeader>
+                            <div className="mt-6">
+                              <p className="text-base leading-relaxed">{selectedArticle?.content}</p>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
                   ))}
@@ -350,9 +431,42 @@ export default function LearnPage() {
                         Story
                       </div>
                     </div>
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Read Story
-                    </Button>
+                    <Dialog open={isDialogOpen && selectedStory?.id === story.id} onOpenChange={(open) => {
+                      setIsDialogOpen(open)
+                      if (!open) {
+                        setSelectedArticle(null)
+                        setSelectedStory(null)
+                      }
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => {
+                          setSelectedStory(story)
+                          setSelectedArticle(null)
+                          setIsDialogOpen(true)
+                        }}>
+                          Read Story
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold">{selectedStory?.title}</DialogTitle>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {selectedStory?.duration}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <BookOpen className="w-4 h-4" />
+                              Story
+                            </div>
+                            <Badge className={getDifficultyBadge(selectedStory?.difficulty)}>{selectedStory?.difficulty}</Badge>
+                          </div>
+                        </DialogHeader>
+                        <div className="mt-6">
+                          <p className="text-base leading-relaxed">{selectedStory?.content}</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardContent>
                 </Card>
               ))}

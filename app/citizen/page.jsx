@@ -108,6 +108,7 @@ export default function CitizenDashboard() {
 
   const [visitedForts, setVisitedForts] = useState([]);
   const [favoriteForts, setFavoriteForts] = useState([]);
+  const [forts, setForts] = useState([]);
 
   const filteredReports = myReports.filter((report) => {
     const matchesStatus = reportFilter === 'all' || report.status.toLowerCase() === reportFilter;
@@ -201,6 +202,22 @@ export default function CitizenDashboard() {
 
   // ---------------- EFFECTS ----------------
   useEffect(() => {
+    async function fetchForts() {
+      try {
+        const res = await fetch("/api/forts")
+        if (!res.ok) {
+          throw new Error("Failed to fetch forts")
+        }
+        const data = await res.json()
+        setForts(data)
+      } catch (error) {
+        console.error("Error fetching forts:", error)
+      }
+    }
+    fetchForts()
+  }, [])
+
+  useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() < 0.1) {
         const newNotif = {
@@ -216,6 +233,19 @@ export default function CitizenDashboard() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Load userProfile from localStorage on mount
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('userProfile');
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile));
+    }
+  }, []);
+
+  // Save userProfile to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+  }, [userProfile]);
 
   // ---------------- HANDLERS ----------------
   const handleImageUpload = (e) => {
@@ -329,7 +359,7 @@ export default function CitizenDashboard() {
   };
   return (
     <div className="min-h-screen bg-background">
-      <CitizenHeader />
+      <CitizenHeader userInfo={{ name: userProfile.name, role: "Heritage Contributor" }} />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
@@ -960,86 +990,20 @@ export default function CitizenDashboard() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  name: "Raigad Fort",
-                  location: "Raigad, Maharashtra",
-                  description:
-                    "The capital of the Maratha Empire and coronation place of Chhatrapati Shivaji Maharaj",
-                  image: "/historic-fort-on-mountain.png",
-                  status: "Open",
-                  difficulty: "Moderate",
-                  duration: "4-5 hours",
-                  elevation: "820m",
-                },
-                {
-                  name: "Shivneri Fort",
-                  location: "Pune, Maharashtra",
-                  description:
-                    "Birthplace of Chhatrapati Shivaji Maharaj, featuring ancient architecture",
-                  image: "/ancient-fort-with-stone-walls.png",
-                  status: "Open",
-                  difficulty: "Easy",
-                  duration: "2-3 hours",
-                  elevation: "400m",
-                },
-                {
-                  name: "Pratapgad Fort",
-                  location: "Satara, Maharashtra",
-                  description:
-                    "Site of the famous battle between Shivaji and Afzal Khan",
-                  image: "/hilltop-fort-with-battlements.png",
-                  status: "Open",
-                  difficulty: "Moderate",
-                  duration: "3-4 hours",
-                  elevation: "1080m",
-                },
-                {
-                  name: "Sinhagad Fort",
-                  location: "Pune, Maharashtra",
-                  description:
-                    "Famous for the brave sacrifice of Tanaji Malusare",
-                  image: "/ancient-mountain-fort-with-multiple-levels.png",
-                  status: "Open",
-                  difficulty: "Easy",
-                  duration: "2-3 hours",
-                  elevation: "760m",
-                },
-                {
-                  name: "Rajgad Fort",
-                  location: "Pune, Maharashtra",
-                  description:
-                    "Former capital of the Maratha Empire before Raigad",
-                  image: "/hilltop-fort-with-stone-walls-and-gates.png",
-                  status: "Open",
-                  difficulty: "Difficult",
-                  duration: "6-7 hours",
-                  elevation: "1376m",
-                },
-                {
-                  name: "Lohagad Fort",
-                  location: "Pune, Maharashtra",
-                  description: "Iron fort known for its strong fortifications",
-                  image: "/ancient-fort-on-steep-mountain-peak.png",
-                  status: "Open",
-                  difficulty: "Easy",
-                  duration: "2-3 hours",
-                  elevation: "1033m",
-                },
-              ].map((fort, index) => (
+              {forts.map((fort) => (
                 <Card
-                  key={index}
+                  key={fort.id}
                   className="border-border hover:shadow-lg transition-shadow"
                 >
                   <div className="aspect-video relative overflow-hidden rounded-t-lg">
                     <img
-                      src={fort.image || "/placeholder.svg"}
+                      src={fort.MainImg || "/placeholder.svg"}
                       alt={fort.name}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 flex gap-2">
                       <Badge className="bg-green-100 text-green-800 border-green-200">
-                        {fort.status}
+                        Open
                       </Badge>
                       {visitedForts.includes(fort.name) && (
                         <Badge className="bg-blue-100 text-blue-800 border-blue-200">
@@ -1095,28 +1059,19 @@ export default function CitizenDashboard() {
 
                     <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-4">
                       <div className="flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        {fort.difficulty}
+                        <Star className="w-3 h-3 fill-current text-yellow-500" />
+                        {fort.rating || 4.5}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {fort.duration}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Navigation className="w-3 h-3" />
-                        {fort.elevation}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapIcon className="w-3 h-3" />
-                        Trek
+                        <Badge variant="outline" className="text-xs">
+                          {fort.historicalSignificance}
+                        </Badge>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
                       <Link
-                        href={`/forts/${fort.name
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}`}
+                        href={`/forts/${fort.id}`}
                         className="flex-1"
                       >
                         <Button
@@ -1157,6 +1112,8 @@ export default function CitizenDashboard() {
               ))}
             </div>
           </TabsContent>
+
+
 
           <TabsContent value="community" className="space-y-6">
             <div>
@@ -1729,6 +1686,7 @@ export default function CitizenDashboard() {
               </Button>
               <Button
                 onClick={() => {
+                  // Profile is automatically saved via useEffect
                   alert("Profile settings saved successfully!");
                   setProfileSettingsOpen(false);
                 }}

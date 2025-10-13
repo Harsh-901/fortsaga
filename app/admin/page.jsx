@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSupabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { AdminHeader } from "@/components/shared/header"
 import { PageHeader } from "@/components/shared/page-header"
 import {
   Users,
@@ -51,9 +51,15 @@ import {
 
 export default function AdminDashboard() {
   const router = useRouter()
+  const supabase = useSupabase()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [urgencyFilter, setUrgencyFilter] = useState("all")
+
+  // Forts state
+  const [forts, setForts] = useState([])
+  const [fortsLoading, setFortsLoading] = useState(true)
+  const [fortsError, setFortsError] = useState(null)
 
   const [showScheduleInspectionDialog, setShowScheduleInspectionDialog] = useState(false)
   const [inspectionForm, setInspectionForm] = useState({
@@ -159,22 +165,8 @@ export default function AdminDashboard() {
       uploadedBy: "Admin",
       description: "Main entrance gate of Raigad Fort",
       tags: ["gate", "entrance", "architecture"],
-      url: "/placeholder.svg?key=a7ay8",
-      thumbnail: "/placeholder.svg?key=r297c",
-    },
-    {
-      id: "MED-002",
-      name: "shivneri-aerial-view.mp4",
-      type: "video",
-      size: "15.2 MB",
-      fort: "Shivneri Fort",
-      category: "Aerial Views",
-      uploadDate: "2024-01-14",
-      uploadedBy: "Admin",
-      description: "Drone footage of Shivneri Fort from above",
-      tags: ["aerial", "drone", "overview"],
-      url: "/placeholder.svg?key=gfwdm",
-      thumbnail: "/placeholder.svg?key=aled0",
+      url: "https://i0.wp.com/farm8.staticflickr.com/7146/6552554653_62206b8836_b.jpg",
+      thumbnail: "https://i0.wp.com/farm8.staticflickr.com/7146/6552554653_62206b8836_b.jpg",
     },
     {
       id: "MED-003",
@@ -187,8 +179,8 @@ export default function AdminDashboard() {
       uploadedBy: "Admin",
       description: "Historical significance and battle records",
       tags: ["history", "battle", "document"],
-      url: "/placeholder.svg?key=kdguw",
-      thumbnail: "/placeholder.svg?key=w2p2i",
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png",
     },
     {
       id: "MED-004",
@@ -201,8 +193,8 @@ export default function AdminDashboard() {
       uploadedBy: "Admin",
       description: "Before and after restoration work",
       tags: ["restoration", "conservation", "repair"],
-      url: "/placeholder.svg?key=5yqes",
-      thumbnail: "/placeholder.svg?key=x4pdp",
+      url: "https://images.indianexpress.com/2017/03/raigad-fort-480.jpg",
+      thumbnail: "https://images.indianexpress.com/2017/03/raigad-fort-480.jpg",
     },
   ])
 
@@ -293,6 +285,34 @@ export default function AdminDashboard() {
     fetchReports();
   }, []);
 
+  // Fetch forts from Supabase
+  useEffect(() => {
+    async function fetchForts() {
+      try {
+        setFortsLoading(true);
+        setFortsError(null);
+
+        const { data, error } = await supabase
+          .from('forts')
+          .select('*')
+          .order('name');
+
+        if (error) {
+          throw error;
+        }
+
+        setForts(data || []);
+      } catch (error) {
+        console.error("Error fetching forts:", error);
+        setFortsError(error.message);
+      } finally {
+        setFortsLoading(false);
+      }
+    }
+
+    fetchForts();
+  }, [supabase]);
+
   // Mock data
   const stats = {
     totalForts: 350,
@@ -300,36 +320,6 @@ export default function AdminDashboard() {
     resolvedThisMonth: 156,
     activeUsers: 2847,
   }
-
-  const forts = [
-    {
-      id: "FRT-001",
-      name: "Raigad Fort",
-      location: "Raigad, Maharashtra",
-      status: "active",
-      lastInspection: "2024-01-10",
-      reports: 3,
-      condition: "good",
-    },
-    {
-      id: "FRT-002",
-      name: "Shivneri Fort",
-      location: "Pune, Maharashtra",
-      status: "active",
-      lastInspection: "2024-01-08",
-      reports: 1,
-      condition: "fair",
-    },
-    {
-      id: "FRT-003",
-      name: "Pratapgad Fort",
-      location: "Satara, Maharashtra",
-      status: "active",
-      lastInspection: "2024-01-12",
-      reports: 0,
-      condition: "excellent",
-    },
-  ]
 
   const getStatusBadge = (status) => {
     const variants = {
@@ -741,8 +731,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AdminHeader />
-
       <div className="container mx-auto px-4 py-8">
         <PageHeader title="Admin Dashboard" description="Manage forts, reports, and heritage conservation efforts" />
 
@@ -1264,45 +1252,55 @@ export default function AdminDashboard() {
             </div>
 
             <Card className="border-border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fort Name</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Condition</TableHead>
-                    <TableHead>Last Inspection</TableHead>
-                    <TableHead>Reports</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {forts.map((fort) => (
-                    <TableRow key={fort.id}>
-                      <TableCell className="font-medium text-foreground">{fort.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{fort.location}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusBadge(fort.status)}>{fort.status}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getConditionBadge(fort.condition)}>{fort.condition}</Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{fort.lastInspection}</TableCell>
-                      <TableCell className="text-muted-foreground">{fort.reports}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewFort(fort.id)}>
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEditFort(fort.id)}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              {fortsLoading ? (
+                <CardContent className="p-8 text-center">
+                  <div className="text-muted-foreground">Loading forts...</div>
+                </CardContent>
+              ) : fortsError ? (
+                <CardContent className="p-8 text-center">
+                  <div className="text-destructive">Error loading forts: {fortsError}</div>
+                </CardContent>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fort Name</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Condition</TableHead>
+                      <TableHead>Last Inspection</TableHead>
+                      <TableHead>Reports</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {forts.map((fort) => (
+                      <TableRow key={fort.id}>
+                        <TableCell className="font-medium text-foreground">{fort.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{fort.location}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusBadge(fort.status)}>{fort.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getConditionBadge(fort.condition)}>{fort.condition}</Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{fort.lastInspection}</TableCell>
+                        <TableCell className="text-muted-foreground">{fort.reports}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewFort(fort.id)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleEditFort(fort.id)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </Card>
           </TabsContent>
 
@@ -1549,6 +1547,8 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+
 
             {/* Media Gallery */}
             {mediaViewMode === "grid" ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,7 @@ import { Shield, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthPage() {
+  const router = useRouter();
   const supabase = useSupabase();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,24 +52,51 @@ export default function AuthPage() {
 
       if (error) throw error;
 
-      // fetch profile for role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
+      // fetch profile for role with retry logic
+      let profile = null;
+      let retries = 3;
+      while (retries > 0 && !profile) {
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", data.user.id)
+            .single();
+          profile = profileData;
+        } catch (err) {
+          console.warn(`Profile fetch attempt failed, retries left: ${retries - 1}`);
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          }
+        }
+      }
+
+      if (!profile) {
+        throw new Error("Failed to load user profile. Please try again.");
+      }
 
       alert("✅ Logged in successfully!");
+      console.log("Profile fetched:", profile);
+      console.log("Redirecting to role:", profile.role);
 
       // Role-based redirect
-      if (profile?.role === "admin") {
-        window.location.href = "/admin";
-      } else if (profile?.role === "citizen") {
-        window.location.href = "/citizen";
-      } else if (profile?.role === "visitor") {
-        window.location.href = "/forts";
+      if (profile.role === "admin") {
+        console.log("Redirecting to /admin");
+        router.push("/admin");
+        return;
+      } else if (profile.role === "citizen") {
+        console.log("Redirecting to /citizen");
+        router.push("/citizen");
+        return;
+      } else if (profile.role === "visitor") {
+        console.log("Redirecting to /forts");
+        router.push("/forts");
+        return;
       } else {
-        window.location.href = "/";
+        console.log("Redirecting to /");
+        router.push("/");
+        return;
       }
     } catch (err) {
       console.error("❌ Login error:", err.message);
@@ -93,15 +122,35 @@ export default function AuthPage() {
       });
       if (error) throw error;
 
-      // Store profile with role
+      // Store profile with role - add retry logic for foreign key constraint
       const userId = data.user.id;
-      const { error: profileError } = await supabase.from("profiles").insert([
-        {
-          id: userId,
-          full_name: registerData.name,
-          role: registerData.role || "citizen",
-        },
-      ]);
+      let profileError = null;
+      let retries = 5;
+
+      while (retries > 0) {
+        try {
+          const { error: insertError } = await supabase.from("profiles").insert([
+            {
+              id: userId,
+              full_name: registerData.name,
+              role: registerData.role || "citizen",
+            },
+          ]);
+          if (!insertError) {
+            profileError = null;
+            break;
+          }
+          profileError = insertError;
+        } catch (err) {
+          profileError = err;
+        }
+
+        retries--;
+        if (retries > 0) {
+          console.log(`Profile creation failed, retrying... (${retries} attempts left)`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        }
+      }
 
       if (profileError) throw profileError;
 

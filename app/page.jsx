@@ -1,15 +1,101 @@
+"use client";
+
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/shared/header"
 import { Footer } from "@/components/shared/footer"
-import { Shield, Users, MapPin, Camera, BookOpen, Award, ChevronRight, Star, TrendingUp } from "lucide-react"
+import { useUser } from "@/lib/supabase"
+import { useEffect, useState } from "react"
+import { Shield, Users, MapPin, Camera, BookOpen, Award, ChevronRight, Star, TrendingUp, Settings } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
+  const { user, loading } = useUser();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user) {
+        try {
+          const { createBrowserClient } = await import('@supabase/ssr');
+          const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+          );
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          setUserRole(profile?.role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
+
+  const getHeaderActions = () => {
+    if (user && userRole) {
+      if (userRole === 'admin') {
+        return {
+          userInfo: { name: user.email, role: 'Administrator' },
+          actions: (
+            <div className="flex items-center gap-4">
+              {/* <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button> */}
+              <Button variant="outline" size="sm" onClick={async () => {
+                try {
+                  const { createBrowserClient } = await import('@supabase/ssr');
+                  const supabase = createBrowserClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                  );
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('Error signing out:', error);
+                }
+              }}>
+                Sign Out
+              </Button>
+            </div>
+          )
+        };
+      } else if (userRole === 'citizen') {
+        return {
+          userInfo: { name: user.email, role: 'Heritage Contributor' },
+          actions: (
+            <Button variant="outline" size="sm" onClick={async () => {
+              try {
+                const { createBrowserClient } = await import('@supabase/ssr');
+                const supabase = createBrowserClient(
+                  process.env.NEXT_PUBLIC_SUPABASE_URL,
+                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                );
+                await supabase.auth.signOut();
+                window.location.href = '/';
+              } catch (error) {
+                console.error('Error signing out:', error);
+              }
+            }}>
+              Sign Out
+            </Button>
+          )
+        };
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header {...getHeaderActions()} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
