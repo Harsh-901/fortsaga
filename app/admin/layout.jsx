@@ -3,11 +3,12 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/lib/supabase';
+import { useUser, useSupabase } from '@/lib/supabase';
 import { AdminHeader } from '@/components/shared/header';
 
 export default function AdminLayout({ children }) {
   const { user, loading } = useUser();
+  const supabase = useSupabase();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -19,13 +20,8 @@ export default function AdminLayout({ children }) {
           return;
         }
 
-        // Check if user has admin role
+        // Check if user has admin role using shared supabase client
         try {
-          const { createBrowserClient } = await import('@supabase/ssr');
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          );
           const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
           if (profile?.role === 'admin') {
@@ -41,7 +37,7 @@ export default function AdminLayout({ children }) {
     };
 
     checkAuth();
-  }, [user, loading, router]);
+  }, [user, loading, router, supabase]);
 
   if (loading || !isAuthorized) {
     return (

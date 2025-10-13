@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { LearningHeader } from "@/components/shared/header"
+import { useSupabase } from "@/lib/supabase"
 import { BookOpen, Search, Clock, User, Calendar, Crown, Sword, Mountain, Scroll, Users, Star } from "lucide-react"
 
 export default function LearnPage() {

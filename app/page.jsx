@@ -5,24 +5,20 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/shared/header"
 import { Footer } from "@/components/shared/footer"
-import { useUser } from "@/lib/supabase"
+import { useUser, useSupabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 import { Shield, Users, MapPin, Camera, BookOpen, Award, ChevronRight, Star, TrendingUp, Settings } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
   const { user, loading } = useUser();
+  const supabase = useSupabase();
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
       if (user) {
         try {
-          const { createBrowserClient } = await import('@supabase/ssr');
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          );
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -36,7 +32,7 @@ export default function HomePage() {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user, supabase]);
 
   const getHeaderActions = () => {
     if (user && userRole) {
@@ -51,11 +47,6 @@ export default function HomePage() {
               </Button> */}
               <Button variant="outline" size="sm" onClick={async () => {
                 try {
-                  const { createBrowserClient } = await import('@supabase/ssr');
-                  const supabase = createBrowserClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-                  );
                   await supabase.auth.signOut();
                   window.location.href = '/';
                 } catch (error) {
@@ -73,11 +64,6 @@ export default function HomePage() {
           actions: (
             <Button variant="outline" size="sm" onClick={async () => {
               try {
-                const { createBrowserClient } = await import('@supabase/ssr');
-                const supabase = createBrowserClient(
-                  process.env.NEXT_PUBLIC_SUPABASE_URL,
-                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-                );
                 await supabase.auth.signOut();
                 window.location.href = '/';
               } catch (error) {

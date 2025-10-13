@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { CitizenHeader } from "@/components/shared/header";
 import { PageHeader } from "@/components/shared/page-header";
+import { useSupabase } from "@/lib/supabase";
 import {
   MapPin,
   AlertTriangle,
@@ -68,19 +69,11 @@ import {
 import Link from "next/link";
 
 export default function CitizenDashboard() {
+  const supabase = useSupabase();
   // ---------------- STATE ----------------
-  const [activeTab, setActiveTab] = useState("login"); // can switch between "login" and "register"
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const myReports = [
-    { id: 1, title: "Illegal cutting", status: "Pending", fort: "Raigad Fort", issue: "Illegal cutting of trees near the main gate", category: "vandalism", urgency: "high", date: "2024-01-15" },
-    { id: 2, title: "Unhealthy tree", status: "Resolved", fort: "Shivneri Fort", issue: "Tree showing signs of disease and needs treatment", category: "maintenance", urgency: "medium", date: "2024-01-10" },
-  ];
-  const [registerForm, setRegisterForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [myReports, setMyReports] = useState([]);
 
   const [userStats, setUserStats] = useState({
     reportsSubmitted: 0,
@@ -217,6 +210,74 @@ export default function CitizenDashboard() {
     fetchForts()
   }, [])
 
+  // Fetch user stats and reports from Supabase
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch reports with full details
+        const { data: reports, error: reportsError } = await supabase
+          .from('reports')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (reportsError) {
+          console.error('Error fetching reports:', reportsError);
+          return;
+        }
+
+        // Transform reports data for display
+        const transformedReports = reports.map(report => ({
+          id: report.id,
+          title: report.description.substring(0, 50) + (report.description.length > 50 ? '...' : ''),
+          status: report.status,
+          fort: report.fort_name,
+          issue: report.description,
+          category: report.category,
+          urgency: report.urgency,
+          date: new Date(report.created_at).toLocaleDateString(),
+          location: report.location || 'Not specified',
+          images: report.images || [],
+          timeline: report.timeline || [],
+          assignedTo: report.assigned_to,
+          estimatedCompletion: report.estimated_completion,
+          completedDate: report.completed_at ? new Date(report.completed_at).toLocaleDateString() : null,
+          adminNotes: report.admin_notes
+        }));
+
+        setMyReports(transformedReports);
+
+        const submitted = reports.length;
+        const resolved = reports.filter(r => r.status === 'resolved').length;
+
+        // Fetch badges count
+        const { data: badges, error: badgesError } = await supabase
+          .from('user_badges')
+          .select('id')
+          .eq('user_id', user.id);
+
+        if (badgesError) {
+          console.error('Error fetching badges:', badgesError);
+        }
+
+        setUserStats({
+          reportsSubmitted: submitted,
+          reportsResolved: resolved,
+          contributionScore: submitted * 10 + resolved * 20, // Example scoring
+          badgesEarned: badges?.length || 0,
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [supabase]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() < 0.1) {
@@ -263,51 +324,53 @@ export default function CitizenDashboard() {
   const removeImage = (id) =>
     setSelectedImages((prev) => prev.filter((img) => img.id !== id));
 
-  const handleSubmitReport = (e) => {
+  const handleSubmitReport = async (e) => {
     e.preventDefault();
-    alert("Report submitted successfully!");
-    setReportForm({
-      fort: "",
-      category: "",
-      location: "",
-      description: "",
-      urgency: "",
-    });
-    setSelectedImages([]);
-  };
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please log in to submit a report");
+        return;
+      }
 
-  const handleLogin = async () => {
-    // Call your backend login API here
-    const response = await fetch("/api/login", {
-      method: "POST",
-      body: JSON.stringify(loginForm),
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
+      // Submit report to Supabase
+      const { data, error } = await supabase
+        .from('reports')
+        .insert([
+          {
+            user_id: user.id,
+            fort_name: reportForm.fort,
+            category: reportForm.category,
+            location: reportForm.location,
+            description: reportForm.description,
+            urgency: reportForm.urgency,
+            status: 'pending',
+            images: selectedImages.map(img => img.file.name), // Store image names
+          }
+        ]);
 
-    // Role-based redirection
-    if (data.user.role === "admin") {
-      window.location.href = "/admin/dashboard";
-    } else if (data.user.role === "citizen") {
-      window.location.href = "/citizen/dashboard";
-    } else {
-      alert("Invalid role received");
+      if (error) throw error;
+
+      alert("Report submitted successfully!");
+      setReportForm({
+        fort: "",
+        category: "",
+        location: "",
+        description: "",
+        urgency: "",
+      });
+      setSelectedImages([]);
+
+      // Refresh the reports list to include the new report
+      await refreshReports();
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert("Failed to submit report. Please try again.");
     }
   };
 
-  const handleRegister = async () => {
-    // Call your backend registration API here
-    const response = await fetch("/api/register", {
-      method: "POST",
-      body: JSON.stringify(registerForm),
-      headers: { "Content-Type": "application/json" },
-    });
-    if (response.ok) {
-      alert("Registration successful! Please log in.");
-      setActiveTab("login"); // Switch to login tab automatically
-      setRegisterForm({ name: "", email: "", password: "" });
-    }
-  };
+
 
   const markNotificationAsRead = (notificationId) => {
     setNotifications((prev) =>
@@ -347,6 +410,47 @@ export default function CitizenDashboard() {
     if (report) {
       setSelectedReport(report);
       setReportViewOpen(true);
+    }
+  };
+
+  // Refresh reports after submitting a new one
+  const refreshReports = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: reports, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error refreshing reports:', error);
+        return;
+      }
+
+      const transformedReports = reports.map(report => ({
+        id: report.id,
+        title: report.description.substring(0, 50) + (report.description.length > 50 ? '...' : ''),
+        status: report.status,
+        fort: report.fort_name,
+        issue: report.description,
+        category: report.category,
+        urgency: report.urgency,
+        date: new Date(report.created_at).toLocaleDateString(),
+        location: report.location || 'Not specified',
+        images: report.images || [],
+        timeline: report.timeline || [],
+        assignedTo: report.assigned_to,
+        estimatedCompletion: report.estimated_completion,
+        completedDate: report.completed_at ? new Date(report.completed_at).toLocaleDateString() : null,
+        adminNotes: report.admin_notes
+      }));
+
+      setMyReports(transformedReports);
+    } catch (error) {
+      console.error('Error refreshing reports:', error);
     }
   };
 
