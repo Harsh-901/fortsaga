@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import {
   Shield,
   MapPin,
@@ -29,6 +30,7 @@ export default function FortDetails() {
   const params = useParams()
   const [selectedImage, setSelectedImage] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [planVisitOpen, setPlanVisitOpen] = useState(false)
   const [fort, setFort] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -245,7 +247,7 @@ export default function FortDetails() {
                     <Badge className={getDifficultyBadge(fortData["trek difficulty"])}>{fortData["trek difficulty"]}</Badge>
                   </div>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Plan Visit</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => setPlanVisitOpen(true)}>Plan Visit</Button>
               </div>
             </div>
           </div>
@@ -505,7 +507,7 @@ export default function FortDetails() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border">
+              {/* <Card className="border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Key Features</CardTitle>
                 </CardHeader>
@@ -519,7 +521,7 @@ export default function FortDetails() {
                     ))}
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </TabsContent>
 
@@ -605,6 +607,69 @@ export default function FortDetails() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Plan Visit Dialog */}
+      <Dialog open={planVisitOpen} onOpenChange={setPlanVisitOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Plan Your Visit to {fortData.name}</DialogTitle>
+            <DialogDescription>
+              Essential information for planning your visit
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              <div>
+                <p className="font-medium">Location</p>
+                <p className="text-sm text-muted-foreground">{fortData.location}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Mountain className="w-5 h-5 text-primary" />
+              <div>
+                <p className="font-medium">Difficulty Level</p>
+                <p className="text-sm text-muted-foreground">{fortData["trek difficulty"] || "Moderate"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              <div>
+                <p className="font-medium">Entry Fee</p>
+                <p className="text-sm text-muted-foreground">{fortData.entryFee ? `₹${fortData.entryFee}` : "₹25 for Indians"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <div>
+                <p className="font-medium">Mode of Transport</p>
+                <p className="text-sm text-muted-foreground">Bus, Railway</p>
+              </div>
+            </div>
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-2">Quick Facts</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Built by:</span>
+                  <span>{fortData["built_by"]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Year:</span>
+                  <span>{fortData["built_year"]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Altitude:</span>
+                  <span>{fortData.elevation}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Era:</span>
+                  <span>{fortData["historical_period"]}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
