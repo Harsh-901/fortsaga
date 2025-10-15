@@ -76,47 +76,9 @@ export default function AdminDashboard() {
     notes: "",
   })
 
-  const [scheduledInspections, setScheduledInspections] = useState([
-    {
-      id: "INS-001",
-      fort: "Raigad Fort",
-      type: "Structural Assessment",
-      inspector: "Dr. Rajesh Patil",
-      date: "2024-01-20",
-      time: "09:00",
-      duration: "4 hours",
-      status: "scheduled",
-      priority: "high",
-      description: "Comprehensive structural integrity assessment of main walls and gates",
-      equipment: "Measuring tools, Camera, Structural analysis kit",
-    },
-    {
-      id: "INS-002",
-      fort: "Shivneri Fort",
-      type: "Conservation Review",
-      inspector: "Prof. Meera Sharma",
-      date: "2024-01-22",
-      time: "10:30",
-      duration: "3 hours",
-      status: "scheduled",
-      priority: "medium",
-      description: "Review of ongoing conservation work and material assessment",
-      equipment: "Documentation tools, Sample collection kit",
-    },
-    {
-      id: "INS-003",
-      fort: "Pratapgad Fort",
-      type: "Safety Inspection",
-      inspector: "Eng. Amit Kumar",
-      date: "2024-01-18",
-      time: "08:00",
-      duration: "2 hours",
-      status: "completed",
-      priority: "high",
-      description: "Safety assessment of visitor pathways and viewing areas",
-      equipment: "Safety measurement tools, First aid kit",
-    },
-  ])
+  const [scheduledInspections, setScheduledInspections] = useState([])
+  const [inspectionsLoading, setInspectionsLoading] = useState(true)
+  const [inspectionsError, setInspectionsError] = useState(null)
 
   const inspectionTypes = [
     "Structural Assessment",
@@ -153,52 +115,42 @@ export default function AdminDashboard() {
     tags: "",
   })
 
-  const [mediaLibrary, setMediaLibrary] = useState([
-    {
-      id: "MED-001",
-      name: "raigad-main-gate.jpg",
-      type: "image",
-      size: "2.4 MB",
-      fort: "Raigad Fort",
-      category: "Architecture",
-      uploadDate: "2024-01-15",
-      uploadedBy: "Admin",
-      description: "Main entrance gate of Raigad Fort",
-      tags: ["gate", "entrance", "architecture"],
-      url: "https://i0.wp.com/farm8.staticflickr.com/7146/6552554653_62206b8836_b.jpg",
-      thumbnail: "https://i0.wp.com/farm8.staticflickr.com/7146/6552554653_62206b8836_b.jpg",
-    },
-    {
-      id: "MED-003",
-      name: "pratapgad-historical-doc.pdf",
-      type: "document",
-      size: "1.8 MB",
-      fort: "Pratapgad Fort",
-      category: "Historical Documents",
-      uploadDate: "2024-01-13",
-      uploadedBy: "Admin",
-      description: "Historical significance and battle records",
-      tags: ["history", "battle", "document"],
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-      thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png",
-    },
-    {
-      id: "MED-004",
-      name: "raigad-restoration.jpg",
-      type: "image",
-      size: "3.1 MB",
-      fort: "Raigad Fort",
-      category: "Restoration",
-      uploadDate: "2024-01-12",
-      uploadedBy: "Admin",
-      description: "Before and after restoration work",
-      tags: ["restoration", "conservation", "repair"],
-      url: "https://images.indianexpress.com/2017/03/raigad-fort-480.jpg",
-      thumbnail: "https://images.indianexpress.com/2017/03/raigad-fort-480.jpg",
-    },
-  ])
+  const [mediaLibrary, setMediaLibrary] = useState([])
+  const [mediaLoading, setMediaLoading] = useState(true)
+  const [mediaError, setMediaError] = useState(null)
 
   const [showAddFortDialog, setShowAddFortDialog] = useState(false)
+  const [showViewFortDialog, setShowViewFortDialog] = useState(false)
+  const [showEditFortDialog, setShowEditFortDialog] = useState(false)
+  const [selectedFort, setSelectedFort] = useState(null)
+  const [editFortForm, setEditFortForm] = useState({
+    name: "",
+    location: "",
+    district: "",
+    state: "Maharashtra",
+    coordinates: "",
+    builtBy: "",
+    builtYear: "",
+    historicalPeriod: "",
+    fortType: "",
+    elevation: "",
+    area: "",
+    description: "",
+    historicalSignificance: "",
+    architecture: "",
+    keyFeatures: "",
+    visitingHours: "",
+    entryFee: "",
+    accessibility: "",
+    nearestRailway: "",
+    nearestAirport: "",
+    accommodation: "",
+    bestTimeToVisit: "",
+    trekDifficulty: "",
+    images: [],
+  })
+  const [selectedInspection, setSelectedInspection] = useState(null)
+  const [inspectionViewOpen, setInspectionViewOpen] = useState(false)
   const [fortForm, setFortForm] = useState({
     name: "",
     location: "",
@@ -313,6 +265,62 @@ export default function AdminDashboard() {
     fetchForts();
   }, [supabase]);
 
+  // Fetch media from Supabase
+  useEffect(() => {
+    async function fetchMedia() {
+      try {
+        setMediaLoading(true);
+        setMediaError(null);
+
+        const { data, error } = await supabase
+          .from('media')
+          .select('*')
+          .order('upload_date', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        setMediaLibrary(data || []);
+      } catch (error) {
+        console.error("Error fetching media:", error);
+        setMediaError(error.message);
+      } finally {
+        setMediaLoading(false);
+      }
+    }
+
+    fetchMedia();
+  }, [supabase]);
+
+  // Fetch inspections from Supabase
+  useEffect(() => {
+    async function fetchInspections() {
+      try {
+        setInspectionsLoading(true);
+        setInspectionsError(null);
+
+        const { data, error } = await supabase
+          .from('inspections')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        setScheduledInspections(data || []);
+      } catch (error) {
+        console.error("Error fetching inspections:", error);
+        setInspectionsError(error.message);
+      } finally {
+        setInspectionsLoading(false);
+      }
+    }
+
+    fetchInspections();
+  }, [supabase]);
+
   // Mock data
   const stats = {
     totalForts: 350,
@@ -387,63 +395,119 @@ export default function AdminDashboard() {
     setShowScheduleInspectionDialog(true)
   }
 
-  const handleSubmitInspection = (e) => {
+  const handleSubmitInspection = async (e) => {
     e.preventDefault()
     console.log("[fortsaga] Inspection scheduled:", inspectionForm)
 
-    const newInspection = {
-      id: `INS-${Date.now()}`,
-      fort: inspectionForm.fort,
-      type: inspectionForm.inspectionType,
-      inspector: inspectionForm.inspector.split(" - ")[0],
-      date: inspectionForm.date,
-      time: inspectionForm.time,
-      duration: `${inspectionForm.duration} hours`,
-      status: "scheduled",
-      priority: inspectionForm.priority,
-      description: inspectionForm.description,
-      equipment: inspectionForm.equipment,
+    try {
+      const inspectionData = {
+        fort: inspectionForm.fort,
+        inspection_type: inspectionForm.inspectionType,
+        inspector: inspectionForm.inspector.split(" - ")[0],
+        date: inspectionForm.date,
+        time: inspectionForm.time,
+        duration: `${inspectionForm.duration} hours`,
+        status: "scheduled",
+        priority: inspectionForm.priority,
+        description: inspectionForm.description,
+        equipment: inspectionForm.equipment,
+        notes: inspectionForm.notes,
+        created_by: "Admin", // In real app, get from auth
+      }
+
+      const { data, error } = await supabase
+        .from('inspections')
+        .insert([inspectionData])
+        .select()
+
+      if (error) {
+        throw error
+      }
+
+      // Update local state
+      setScheduledInspections((prev) => [data[0], ...prev])
+      alert(`Inspection scheduled successfully for ${inspectionForm.fort} on ${inspectionForm.date}!`)
+      setShowScheduleInspectionDialog(false)
+
+      // Reset form
+      setInspectionForm({
+        fort: "",
+        inspectionType: "",
+        inspector: "",
+        date: "",
+        time: "",
+        duration: "2",
+        priority: "medium",
+        description: "",
+        checklist: [],
+        equipment: "",
+        notes: "",
+      })
+    } catch (error) {
+      console.error("Error scheduling inspection:", error)
+      alert(`Error scheduling inspection: ${error.message}`)
     }
-
-    setScheduledInspections((prev) => [newInspection, ...prev])
-    alert(`Inspection scheduled successfully for ${inspectionForm.fort} on ${inspectionForm.date}!`)
-    setShowScheduleInspectionDialog(false)
-
-    // Reset form
-    setInspectionForm({
-      fort: "",
-      inspectionType: "",
-      inspector: "",
-      date: "",
-      time: "",
-      duration: "2",
-      priority: "medium",
-      description: "",
-      checklist: [],
-      equipment: "",
-      notes: "",
-    })
   }
 
-  const handleCancelInspection = (inspectionId) => {
-    if (confirm("Are you sure you want to cancel this inspection?")) {
+  const handleCancelInspection = async (inspectionId) => {
+    if (!confirm("Are you sure you want to cancel this inspection?")) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .update({
+          status: "cancelled",
+          updated_by: "Admin", // In real app, get from auth
+        })
+        .eq('id', inspectionId)
+
+      if (error) {
+        throw error
+      }
+
+      // Update local state
       setScheduledInspections((prev) =>
         prev.map((inspection) =>
           inspection.id === inspectionId ? { ...inspection, status: "cancelled" } : inspection,
         ),
       )
       alert("Inspection cancelled successfully!")
+    } catch (error) {
+      console.error("Error cancelling inspection:", error)
+      alert(`Error cancelling inspection: ${error.message}`)
     }
   }
 
-  const handleCompleteInspection = (inspectionId) => {
-    if (confirm("Mark this inspection as completed?")) {
+  const handleCompleteInspection = async (inspectionId) => {
+    if (!confirm("Mark this inspection as completed?")) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .update({
+          status: "completed",
+          updated_by: "Admin", // In real app, get from auth
+        })
+        .eq('id', inspectionId)
+
+      if (error) {
+        throw error
+      }
+
+      // Update local state
       setScheduledInspections((prev) =>
         prev.map((inspection) =>
           inspection.id === inspectionId ? { ...inspection, status: "completed" } : inspection,
         ),
       )
       alert("Inspection marked as completed!")
+    } catch (error) {
+      console.error("Error completing inspection:", error)
+      alert(`Error completing inspection: ${error.message}`)
     }
   }
 
@@ -469,44 +533,119 @@ export default function AdminDashboard() {
     }))
   }
 
-  const handleSubmitMediaUpload = (e) => {
+  const handleSubmitMediaUpload = async (e) => {
     e.preventDefault()
     console.log("[fortsaga] Media upload submitted:", uploadForm)
 
-    // Add files to media library
-    const newMediaItems = uploadForm.files.map((file, index) => ({
-      id: `MED-${Date.now()}-${index}`,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      fort: uploadForm.fort,
-      category: uploadForm.category,
-      uploadDate: new Date().toISOString().split("T")[0],
-      uploadedBy: "Admin",
-      description: uploadForm.description,
-      tags: uploadForm.tags.split(",").map((tag) => tag.trim()),
-      url: file.preview,
-      thumbnail: file.preview,
-    }))
+    try {
+      // Upload files to Supabase storage and database
+      const uploadedFiles = []
 
-    setMediaLibrary((prev) => [...newMediaItems, ...prev])
-    alert(`${uploadForm.files.length} file(s) uploaded successfully!`)
-    setShowUploadMediaDialog(false)
+      for (const file of uploadForm.files) {
+        // Upload file to storage
+        const fileExt = file.file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `media/${fileName}`
 
-    // Reset form
-    setUploadForm({
-      files: [],
-      fort: "",
-      category: "",
-      description: "",
-      tags: "",
-    })
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(filePath, file.file)
+
+        if (uploadError) {
+          throw uploadError
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('media')
+          .getPublicUrl(filePath)
+
+        // Create database record
+        const { data: mediaData, error: dbError } = await supabase
+          .from('media')
+          .insert([{
+            name: file.file.name,
+            type: file.type,
+            size: file.size,
+            fort: uploadForm.fort,
+            category: uploadForm.category,
+            upload_date: new Date().toISOString(),
+            uploaded_by: "Admin", // In real app, get from auth
+            description: uploadForm.description,
+            tags: uploadForm.tags.split(",").map((tag) => tag.trim()),
+            url: publicUrl,
+            thumbnail: file.type === 'image' ? publicUrl : null,
+          }])
+          .select()
+
+        if (dbError) {
+          throw dbError
+        }
+
+        uploadedFiles.push(mediaData[0])
+      }
+
+      // Update local state
+      setMediaLibrary((prev) => [...uploadedFiles, ...prev])
+      alert(`${uploadForm.files.length} file(s) uploaded successfully!`)
+      setShowUploadMediaDialog(false)
+
+      // Reset form
+      setUploadForm({
+        files: [],
+        fort: "",
+        category: "",
+        description: "",
+        tags: "",
+      })
+    } catch (error) {
+      console.error("Error uploading media:", error)
+      alert(`Error uploading files: ${error.message}`)
+    }
   }
 
-  const handleDeleteMedia = (mediaId) => {
-    if (confirm("Are you sure you want to delete this media file?")) {
+  const handleDeleteMedia = async (mediaId) => {
+    if (!confirm("Are you sure you want to delete this media file?")) {
+      return
+    }
+
+    try {
+      // Find the media item to get file path
+      const mediaItem = mediaLibrary.find(item => item.id === mediaId)
+
+      if (mediaItem && mediaItem.url) {
+        // Extract file path from URL
+        const urlParts = mediaItem.url.split('/')
+        const fileName = urlParts[urlParts.length - 1]
+        const filePath = `media/${fileName}`
+
+        // Delete from storage
+        const { error: storageError } = await supabase.storage
+          .from('media')
+          .remove([filePath])
+
+        if (storageError) {
+          console.error("Error deleting from storage:", storageError)
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('media')
+        .delete()
+        .eq('id', mediaId)
+
+      if (dbError) {
+        throw dbError
+      }
+
+      // Update local state
       setMediaLibrary((prev) => prev.filter((item) => item.id !== mediaId))
       alert("Media file deleted successfully!")
+    } catch (error) {
+      console.error("Error deleting media:", error)
+      alert(`Error deleting file: ${error.message}`)
     }
   }
 
@@ -573,6 +712,60 @@ export default function AdminDashboard() {
       trekDifficulty: "",
       images: [],
     })
+  }
+
+  const handleSubmitEditFort = async (e) => {
+    e.preventDefault()
+    console.log("[fortsaga] Edit fort form submitted:", editFortForm)
+
+    try {
+      const { error } = await supabase
+        .from('forts')
+        .update({
+          name: editFortForm.name,
+          location: editFortForm.location,
+          district: editFortForm.district,
+          state: editFortForm.state,
+          coordinates: editFortForm.coordinates,
+          built_by: editFortForm.builtBy,
+          built_year: editFortForm.builtYear,
+          historical_period: editFortForm.historicalPeriod,
+          fort_type: editFortForm.fortType,
+          elevation: editFortForm.elevation,
+          area: editFortForm.area,
+          description: editFortForm.description,
+          historical_significance: editFortForm.historicalSignificance,
+          architecture: editFortForm.architecture,
+          key_features: editFortForm.keyFeatures,
+          visiting_hours: editFortForm.visitingHours,
+          entry_fee: editFortForm.entryFee,
+          accessibility: editFortForm.accessibility,
+          nearest_railway: editFortForm.nearestRailway,
+          nearest_airport: editFortForm.nearestAirport,
+          accommodation: editFortForm.accommodation,
+          best_time_to_visit: editFortForm.bestTimeToVisit,
+          trek_difficulty: editFortForm.trekDifficulty,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedFort.id)
+
+      if (error) {
+        throw error
+      }
+
+      // Update local state
+      setForts((prev) =>
+        prev.map((fort) =>
+          fort.id === selectedFort.id ? { ...fort, ...editFortForm } : fort,
+        ),
+      )
+      alert(`Fort "${editFortForm.name}" has been updated successfully!`)
+      setShowEditFortDialog(false)
+      setSelectedFort(null)
+    } catch (error) {
+      console.error("Error updating fort:", error)
+      alert(`Error updating fort: ${error.message}`)
+    }
   }
 
   const handleImageUpload = (e) => {
@@ -722,11 +915,51 @@ export default function AdminDashboard() {
   }
 
   const handleViewFort = (fortId) => {
-    alert(`View Fort ${fortId} - This would open detailed fort information`)
+    const fort = forts.find((f) => f.id === fortId)
+    if (fort) {
+      setSelectedFort(fort)
+      setShowViewFortDialog(true)
+    }
   }
 
   const handleEditFort = (fortId) => {
-    alert(`Edit Fort ${fortId} - This would open fort editing interface`)
+    const fort = forts.find((f) => f.id === fortId)
+    if (fort) {
+      setSelectedFort(fort)
+      setEditFortForm({
+        name: fort.name || "",
+        location: fort.location || "",
+        district: fort.district || "",
+        state: fort.state || "Maharashtra",
+        coordinates: fort.coordinates || "",
+        builtBy: fort.built_by || "",
+        builtYear: fort.built_year || "",
+        historicalPeriod: fort.historical_period || "",
+        fortType: fort.fort_type || "",
+        elevation: fort.elevation || "",
+        area: fort.area || "",
+        description: fort.description || "",
+        historicalSignificance: fort.historical_significance || "",
+        architecture: fort.architecture || "",
+        keyFeatures: fort.key_features || "",
+        visitingHours: fort.visiting_hours || "",
+        entryFee: fort.entry_fee || "",
+        accessibility: fort.accessibility || "",
+        nearestRailway: fort.nearest_railway || "",
+        nearestAirport: fort.nearest_airport || "",
+        accommodation: fort.accommodation || "",
+        bestTimeToVisit: fort.best_time_to_visit || "",
+        trekDifficulty: fort.trek_difficulty || "",
+        images: fort.images || [],
+      })
+      setShowEditFortDialog(true)
+    }
+  }
+
+  const handleViewInspection = (inspectionId) => {
+    const inspection = scheduledInspections.find((i) => i.id === inspectionId)
+    setSelectedInspection(inspection)
+    setInspectionViewOpen(true)
   }
 
   return (
@@ -1266,10 +1499,10 @@ export default function AdminDashboard() {
                     <TableRow>
                       <TableHead>Fort Name</TableHead>
                       <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
+                      {/* <TableHead>Status</TableHead>
                       <TableHead>Condition</TableHead>
                       <TableHead>Last Inspection</TableHead>
-                      <TableHead>Reports</TableHead>
+                      <TableHead>Reports</TableHead> */}
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1278,14 +1511,14 @@ export default function AdminDashboard() {
                       <TableRow key={fort.id}>
                         <TableCell className="font-medium text-foreground">{fort.name}</TableCell>
                         <TableCell className="text-muted-foreground">{fort.location}</TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <Badge className={getStatusBadge(fort.status)}>{fort.status}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={getConditionBadge(fort.condition)}>{fort.condition}</Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{fort.lastInspection}</TableCell>
-                        <TableCell className="text-muted-foreground">{fort.reports}</TableCell>
+                        <TableCell className="text-muted-foreground">{fort.reports}</TableCell> */}
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm" onClick={() => handleViewFort(fort.id)}>
@@ -1551,7 +1784,15 @@ export default function AdminDashboard() {
 
 
             {/* Media Gallery */}
-            {mediaViewMode === "grid" ? (
+            {mediaLoading ? (
+              <Card className="border-border p-8 text-center">
+                <div className="text-muted-foreground">Loading media files...</div>
+              </Card>
+            ) : mediaError ? (
+              <Card className="border-border p-8 text-center">
+                <div className="text-destructive">Error loading media: {mediaError}</div>
+              </Card>
+            ) : mediaViewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {filteredMedia.map((item) => (
                   <Card key={item.id} className="border-border overflow-hidden">
@@ -1602,7 +1843,7 @@ export default function AdminDashboard() {
                         <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>{item.size}</span>
-                          <span>{item.uploadDate}</span>
+                          <span>{item.upload_date ? new Date(item.upload_date).toLocaleDateString() : item.uploadDate}</span>
                         </div>
                         <div className="flex items-center gap-1 pt-2">
                           <Button variant="ghost" size="sm" onClick={() => window.open(item.url, "_blank")}>
@@ -1674,7 +1915,7 @@ export default function AdminDashboard() {
                         <TableCell className="text-muted-foreground">{item.fort}</TableCell>
                         <TableCell className="text-muted-foreground">{item.category}</TableCell>
                         <TableCell className="text-muted-foreground">{item.size}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.uploadDate}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.upload_date ? new Date(item.upload_date).toLocaleDateString() : item.uploadDate}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm" onClick={() => window.open(item.url, "_blank")}>
@@ -1736,146 +1977,221 @@ export default function AdminDashboard() {
             </div>
 
             {/* Inspection Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-foreground">
-                        {scheduledInspections.filter((i) => i.status === "scheduled").length}
+            {inspectionsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="border-border">
+                    <CardContent className="p-4">
+                      <div className="animate-pulse">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 bg-muted rounded"></div>
+                          <div>
+                            <div className="h-8 bg-muted rounded w-12 mb-2"></div>
+                            <div className="h-4 bg-muted rounded w-16"></div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">Scheduled</div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : inspectionsError ? (
+              <Card className="border-border">
+                <CardContent className="p-8 text-center">
+                  <div className="text-destructive">Error loading inspection stats: {inspectionsError}</div>
                 </CardContent>
               </Card>
-              <Card className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-foreground">
-                        {scheduledInspections.filter((i) => i.status === "completed").length}
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {scheduledInspections.filter((i) => i.status === "scheduled").length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Scheduled</div>
                       </div>
-                      <div className="text-sm text-muted-foreground">Completed</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-foreground">
-                        {scheduledInspections.filter((i) => i.priority === "high").length}
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {scheduledInspections.filter((i) => i.status === "completed").length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Completed</div>
                       </div>
-                      <div className="text-sm text-muted-foreground">High Priority</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
-                    <div>
-                      <div className="text-2xl font-bold text-foreground">{scheduledInspections.length}</div>
-                      <div className="text-sm text-muted-foreground">Total</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-600" />
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {scheduledInspections.filter((i) => i.priority === "high").length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">High Priority</div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      <div>
+                        <div className="text-2xl font-bold text-foreground">{scheduledInspections.length}</div>
+                        <div className="text-sm text-muted-foreground">Total</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Scheduled Inspections */}
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Scheduled Inspections</CardTitle>
-                <CardDescription>Upcoming and completed fort inspections</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {scheduledInspections.map((inspection) => (
-                    <div
-                      key={inspection.id}
-                      className="flex items-start justify-between p-4 bg-card/50 rounded-lg border border-border"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-foreground">{inspection.fort}</h3>
-                          <Badge className={getStatusBadge(inspection.status)}>{inspection.status}</Badge>
-                          <Badge className={getPriorityBadge(inspection.priority)}>{inspection.priority}</Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <ClipboardList className="w-4 h-4" />
-                              <span>{inspection.type}</span>
+            {inspectionsLoading ? (
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Scheduled Inspections</CardTitle>
+                  <CardDescription>Upcoming and completed fort inspections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-start justify-between p-4 bg-card/50 rounded-lg border border-border">
+                        <div className="flex-1 animate-pulse">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="h-6 bg-muted rounded w-32"></div>
+                            <div className="h-6 bg-muted rounded w-20"></div>
+                            <div className="h-6 bg-muted rounded w-16"></div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <div className="h-4 bg-muted rounded w-24"></div>
+                              <div className="h-4 bg-muted rounded w-28"></div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4" />
-                              <span>{inspection.inspector}</span>
+                            <div className="space-y-1">
+                              <div className="h-4 bg-muted rounded w-32"></div>
+                              <div className="h-4 bg-muted rounded w-24"></div>
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              <span>
-                                {inspection.date} at {inspection.time}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span>Duration: {inspection.duration}</span>
-                            </div>
-                          </div>
+                          <div className="h-4 bg-muted rounded w-full mt-2"></div>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2">{inspection.description}</p>
-                        {inspection.equipment && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            <strong>Equipment:</strong> {inspection.equipment}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 ml-4">
+                          <div className="h-8 bg-muted rounded w-8"></div>
+                          <div className="h-8 bg-muted rounded w-8"></div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        {inspection.status === "scheduled" && (
-                          <>
-                            <Button variant="outline" size="sm" onClick={() => handleCompleteInspection(inspection.id)}>
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCancelInspection(inspection.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {scheduledInspections.length === 0 && (
-                  <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No Inspections Scheduled</h3>
-                    <p className="text-muted-foreground mb-4">Schedule your first fort inspection to get started</p>
-                    <Button onClick={handleScheduleInspection} className="bg-primary hover:bg-primary/90">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      Schedule Inspection
-                    </Button>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : inspectionsError ? (
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Scheduled Inspections</CardTitle>
+                  <CardDescription>Upcoming and completed fort inspections</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 text-center">
+                  <div className="text-destructive">Error loading inspections: {inspectionsError}</div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Scheduled Inspections</CardTitle>
+                  <CardDescription>Upcoming and completed fort inspections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {scheduledInspections.map((inspection) => (
+                      <div
+                        key={inspection.id}
+                        className="flex items-start justify-between p-4 bg-card/50 rounded-lg border border-border"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-foreground">{inspection.fort}</h3>
+                            <Badge className={getStatusBadge(inspection.status)}>{inspection.status}</Badge>
+                            <Badge className={getPriorityBadge(inspection.priority)}>{inspection.priority}</Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <ClipboardList className="w-4 h-4" />
+                                <span>{inspection.inspection_type}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                <span>{inspection.inspector}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>
+                                  {inspection.date} at {inspection.time}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                <span>Duration: {inspection.duration}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-2">{inspection.description}</p>
+                          {inspection.equipment && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              <strong>Equipment:</strong> {inspection.equipment}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {inspection.status === "scheduled" && (
+                            <>
+                              <Button variant="outline" size="sm" onClick={() => handleCompleteInspection(inspection.id)}>
+                                <CheckCircle className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleCancelInspection(inspection.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                          <Button variant="ghost" size="sm" onClick={() => handleViewInspection(inspection.id)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {scheduledInspections.length === 0 && (
+                    <div className="text-center py-8">
+                      <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No Inspections Scheduled</h3>
+                      <p className="text-muted-foreground mb-4">Schedule your first fort inspection to get started</p>
+                      <Button onClick={handleScheduleInspection} className="bg-primary hover:bg-primary/90">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Schedule Inspection
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 
@@ -2006,6 +2322,431 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={inspectionViewOpen} onOpenChange={setInspectionViewOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Inspection Details - {selectedInspection?.id}</DialogTitle>
+            </DialogHeader>
+            {selectedInspection && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Fort</label>
+                    <p className="text-foreground">{selectedInspection.fort}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Inspection Type</label>
+                    <p className="text-foreground">{selectedInspection.inspection_type}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Inspector</label>
+                    <p className="text-foreground">{selectedInspection.inspector}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Status</label>
+                    <Badge className={getStatusBadge(selectedInspection.status)}>{selectedInspection.status}</Badge>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Priority</label>
+                    <Badge className={getPriorityBadge(selectedInspection.priority)}>{selectedInspection.priority}</Badge>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Date & Time</label>
+                    <p className="text-foreground">{selectedInspection.date} at {selectedInspection.time}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Duration</label>
+                    <p className="text-foreground">{selectedInspection.duration}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Created</label>
+                    <p className="text-foreground">{selectedInspection.created_at ? new Date(selectedInspection.created_at).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Description</label>
+                  <p className="text-foreground mt-1">{selectedInspection.description}</p>
+                </div>
+                {selectedInspection.equipment && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Required Equipment</label>
+                    <p className="text-foreground mt-1">{selectedInspection.equipment}</p>
+                  </div>
+                )}
+                {selectedInspection.notes && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Additional Notes</label>
+                    <p className="text-foreground mt-1">{selectedInspection.notes}</p>
+                  </div>
+                )}
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setInspectionViewOpen(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showViewFortDialog} onOpenChange={setShowViewFortDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-primary">{selectedFort?.name}</DialogTitle>
+              <DialogDescription>
+                Detailed information about this fort
+              </DialogDescription>
+            </DialogHeader>
+            {selectedFort && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Location</Label>
+                      <p className="text-foreground">{selectedFort.location}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">District</Label>
+                      <p className="text-foreground">{selectedFort.district}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">State</Label>
+                      <p className="text-foreground">{selectedFort.state}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Coordinates</Label>
+                      <p className="text-foreground">{selectedFort.coordinates}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Built By</Label>
+                      <p className="text-foreground">{selectedFort.built_by}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Built Year</Label>
+                      <p className="text-foreground">{selectedFort.built_year}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Historical Period</Label>
+                      <p className="text-foreground">{selectedFort.historical_period}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Fort Type</Label>
+                      <p className="text-foreground">{selectedFort.fort_type}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Elevation</Label>
+                      <p className="text-foreground">{selectedFort.elevation}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Area</Label>
+                      <p className="text-foreground">{selectedFort.area}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Visiting Hours</Label>
+                      <p className="text-foreground">{selectedFort.visiting_hours}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Entry Fee</Label>
+                      <p className="text-foreground">{selectedFort.entry_fee}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Accessibility</Label>
+                      <p className="text-foreground">{selectedFort.accessibility}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Nearest Railway</Label>
+                      <p className="text-foreground">{selectedFort.nearest_railway}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Nearest Airport</Label>
+                      <p className="text-foreground">{selectedFort.nearest_airport}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Trek Difficulty</Label>
+                      <p className="text-foreground">{selectedFort.trek_difficulty}</p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                  <p className="text-foreground mt-1">{selectedFort.description}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Historical Significance</Label>
+                  <p className="text-foreground mt-1">{selectedFort.historical_significance}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Architecture</Label>
+                  <p className="text-foreground mt-1">{selectedFort.architecture}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Key Features</Label>
+                  <p className="text-foreground mt-1">{selectedFort.key_features}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Accommodation</Label>
+                  <p className="text-foreground mt-1">{selectedFort.accommodation}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Best Time to Visit</Label>
+                  <p className="text-foreground mt-1">{selectedFort.best_time_to_visit}</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowViewFortDialog(false)}>
+                    Close
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewFortDialog(false)
+                    handleEditFort(selectedFort.id)
+                  }}>
+                    Edit Fort
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showEditFortDialog} onOpenChange={setShowEditFortDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-primary">Edit Fort - {selectedFort?.name}</DialogTitle>
+              <DialogDescription>
+                Update fort information and details
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmitEditFort} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="editName">Name *</Label>
+                  <Input
+                    id="editName"
+                    value={editFortForm.name}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editLocation">Location *</Label>
+                  <Input
+                    id="editLocation"
+                    value={editFortForm.location}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, location: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editDistrict">District</Label>
+                  <Input
+                    id="editDistrict"
+                    value={editFortForm.district}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, district: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editState">State</Label>
+                  <Select
+                    value={editFortForm.state}
+                    onValueChange={(value) => setEditFortForm((prev) => ({ ...prev, state: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                      <SelectItem value="Karnataka">Karnataka</SelectItem>
+                      <SelectItem value="Goa">Goa</SelectItem>
+                      <SelectItem value="Gujarat">Gujarat</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editCoordinates">Coordinates</Label>
+                  <Input
+                    id="editCoordinates"
+                    value={editFortForm.coordinates}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, coordinates: e.target.value }))}
+                    placeholder="e.g., 18.9220° N, 72.8347° E"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editBuiltBy">Built By</Label>
+                  <Input
+                    id="editBuiltBy"
+                    value={editFortForm.builtBy}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, builtBy: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editBuiltYear">Built Year</Label>
+                  <Input
+                    id="editBuiltYear"
+                    value={editFortForm.builtYear}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, builtYear: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editHistoricalPeriod">Historical Period</Label>
+                  <Input
+                    id="editHistoricalPeriod"
+                    value={editFortForm.historicalPeriod}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, historicalPeriod: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editFortType">Fort Type</Label>
+                  <Input
+                    id="editFortType"
+                    value={editFortForm.fortType}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, fortType: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editElevation">Elevation</Label>
+                  <Input
+                    id="editElevation"
+                    value={editFortForm.elevation}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, elevation: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editArea">Area</Label>
+                  <Input
+                    id="editArea"
+                    value={editFortForm.area}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, area: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editVisitingHours">Visiting Hours</Label>
+                  <Input
+                    id="editVisitingHours"
+                    value={editFortForm.visitingHours}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, visitingHours: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editEntryFee">Entry Fee</Label>
+                  <Input
+                    id="editEntryFee"
+                    value={editFortForm.entryFee}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, entryFee: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editAccessibility">Accessibility</Label>
+                  <Input
+                    id="editAccessibility"
+                    value={editFortForm.accessibility}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, accessibility: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editNearestRailway">Nearest Railway</Label>
+                  <Input
+                    id="editNearestRailway"
+                    value={editFortForm.nearestRailway}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, nearestRailway: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editNearestAirport">Nearest Airport</Label>
+                  <Input
+                    id="editNearestAirport"
+                    value={editFortForm.nearestAirport}
+                    onChange={(e) => setEditFortForm((prev) => ({ ...prev, nearestAirport: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editTrekDifficulty">Trek Difficulty</Label>
+                  <Select
+                    value={editFortForm.trekDifficulty}
+                    onValueChange={(value) => setEditFortForm((prev) => ({ ...prev, trekDifficulty: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Easy">Easy</SelectItem>
+                      <SelectItem value="Moderate">Moderate</SelectItem>
+                      <SelectItem value="Difficult">Difficult</SelectItem>
+                      <SelectItem value="Very Difficult">Very Difficult</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="editDescription">Description</Label>
+                <Textarea
+                  id="editDescription"
+                  value={editFortForm.description}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="editHistoricalSignificance">Historical Significance</Label>
+                <Textarea
+                  id="editHistoricalSignificance"
+                  value={editFortForm.historicalSignificance}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, historicalSignificance: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="editArchitecture">Architecture</Label>
+                <Textarea
+                  id="editArchitecture"
+                  value={editFortForm.architecture}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, architecture: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="editKeyFeatures">Key Features</Label>
+                <Textarea
+                  id="editKeyFeatures"
+                  value={editFortForm.keyFeatures}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, keyFeatures: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="editAccommodation">Accommodation</Label>
+                <Textarea
+                  id="editAccommodation"
+                  value={editFortForm.accommodation}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, accommodation: e.target.value }))}
+                  rows={2}
+                />
+              </div>
+              <div>
+                <Label htmlFor="editBestTimeToVisit">Best Time to Visit</Label>
+                <Textarea
+                  id="editBestTimeToVisit"
+                  value={editFortForm.bestTimeToVisit}
+                  onChange={(e) => setEditFortForm((prev) => ({ ...prev, bestTimeToVisit: e.target.value }))}
+                  rows={2}
+                />
+              </div>
+              <DialogFooter className="gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowEditFortDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={!editFortForm.name || !editFortForm.location}
+                >
+                  Update Fort
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

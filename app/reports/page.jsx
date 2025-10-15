@@ -52,6 +52,7 @@ export default function ReportsPage() {
     "Other",
   ];
 
+  // Handle image selection
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const newImages = files.map((file) => ({
@@ -66,29 +67,52 @@ export default function ReportsPage() {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
+  // Submit report
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Convert images to previews for now (store as JSONB in Supabase)
-      const imagePreviews = images.map((img) => img.preview);
+      const uploadedImageUrls = [];
 
-      const { data, error } = await supabase
-        .from('reports')
-        .insert([
-          {
-            reporter_name: 'Anonymous',
-            fort_name: selectedFort,
-            issue_category: issueCategory,
-            urgency_level: urgency,
-            description,
-            location,
-            images: imagePreviews,
-          }
-        ]);
+      // Upload images to Supabase Storage
+      for (let img of images) {
+        const fileName = `${Date.now()}-${img.file.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("reports")
+          .upload(`reports/${fileName}`, img.file);
 
-      if (error) throw error;
+        if (uploadError) {
+          console.error("Upload failed:", uploadError);
+          alert("Image upload failed!");
+          setLoading(false);
+          return;
+        }
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from("reports")
+          .getPublicUrl(`reports/${fileName}`);
+
+        uploadedImageUrls.push(publicUrlData.publicUrl);
+      }
+
+      // Send report to backend
+      const response = await fetch("http://localhost:4000/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reporter_name: "Anonymous",
+          fort_name: selectedFort,
+          issue_category: issueCategory,
+          urgency_level: urgency,
+          description,
+          location,
+          images: uploadedImageUrls, // Permanent URLs
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to submit report");
 
       alert("Report submitted successfully!");
 
@@ -191,7 +215,7 @@ export default function ReportsPage() {
                   </Select>
                 </div>
 
-                {/* Location within Fort */}
+                {/* Location */}
                 <div className="space-y-2">
                   <Label htmlFor="location">Specific Location</Label>
                   <Input
